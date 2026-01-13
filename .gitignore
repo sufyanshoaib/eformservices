@@ -39,3 +39,4 @@ prisma/migrations
 # IDE
 .vscode
 .idea
+.env_bk
