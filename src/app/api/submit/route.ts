@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         headers.set('Content-Disposition', `attachment; filename="${form.name.replace(/\s+/g, '_')}_filled.pdf"`);
         headers.set('Content-Length', pdfBytes.length.toString());
 
-        return new NextResponse(pdfBytes, {
+        return new NextResponse(Buffer.from(pdfBytes), {
             status: 200,
             headers
         });

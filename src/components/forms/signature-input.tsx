@@ -22,7 +22,7 @@ export default function SignatureInput({ value, onChange, label, required, useMo
             padRef.current.fromDataURL(value);
             setIsEmpty(false);
         }
-    }, [value, useModal]);
+    }, [value, useModal, isEmpty]);
 
     const handleEnd = () => {
         if (padRef.current) {

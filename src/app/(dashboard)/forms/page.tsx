@@ -73,7 +73,7 @@ export default async function FormsPage() {
                         <FileText className="h-6 w-6 text-blue-600" />
                     </div>
                     <h3 className="mt-2 text-sm font-semibold text-gray-900">No Forms Created</h3>
-                    <p className="mt-1 text-sm text-gray-500">You haven't created any forms yet. Go to your PDF library to start.</p>
+                    <p className="mt-1 text-sm text-gray-500">You haven&apos;t created any forms yet. Go to your PDF library to start.</p>
                     <div className="mt-6">
                         <Link
                             href="/dashboard/pdfs"
