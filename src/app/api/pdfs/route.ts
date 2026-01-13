@@ -6,9 +6,21 @@ import { uploadPdfBufferToBlob } from '@/lib/pdf/upload';
 // This is a placeholder for authentication
 // TODO: Replace with actual NextAuth session check
 async function getUserId(request: NextRequest): Promise<string | null> {
-    // Temporary: Return a mock user ID for development
-    // In production, this should check the session
-    return 'dev-user-id';
+    const userId = 'dev-user-id';
+
+    // Ensure the dev user exists in the database
+    // This is a temporary fix until real auth is working
+    await prisma.user.upsert({
+        where: { id: userId },
+        update: {},
+        create: {
+            id: userId,
+            email: 'dev@example.com',
+            name: 'Dev User',
+        },
+    });
+
+    return userId;
 }
 
 /**

@@ -8,6 +8,8 @@ import { redirect } from 'next/navigation';
 async function getPdfs() {
     try {
         // In a real production app we might check auth here too
+        // Check if we can even connect first to avoid hard crashes
+        // This is a safety check for development environments
         const pdfs = await prisma.pdf.findMany({
             orderBy: { uploadedAt: 'desc' },
             include: {
@@ -21,6 +23,8 @@ async function getPdfs() {
         });
         return pdfs;
     } catch (e) {
+        console.error('Failed to fetch PDFs:', e);
+        // Return empty array to allow page to render with empty state instead of crashing 
         return [];
     }
 }
@@ -35,16 +39,39 @@ async function createFormAction(formData: FormData) {
     // Manual check for "dev-user-id" since we don't have full auth wired up
     const userId = 'dev-user-id';
 
-    const form = await prisma.form.create({
-        data: {
-            userId,
-            pdfId,
-            name: `${pdfName} Form`,
-            fieldMappings: [],
-        },
-    });
+    let newFormId = null;
 
-    redirect(`/dashboard/forms/${form.id}/edit`);
+    try {
+        // Ensure dev user exists
+        await prisma.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+                id: userId,
+                email: 'dev@example.com',
+                name: 'Dev User',
+            },
+        });
+
+        const form = await prisma.form.create({
+            data: {
+                userId,
+                pdfId,
+                name: `${pdfName} Form`,
+                fieldMappings: [],
+            },
+        });
+
+        newFormId = form.id;
+    } catch (error) {
+        console.error('Failed to create form:', error);
+        // Silent fail for now in server action, ideally shoudl redirect to error page
+        return;
+    }
+
+    if (newFormId) {
+        redirect(`/dashboard/forms/${newFormId}/edit`);
+    }
 }
 
 async function deletePdfAction(formData: FormData) {

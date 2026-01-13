@@ -12,8 +12,9 @@ async function getUserId(request: NextRequest): Promise<string | null> {
  */
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
+    const params = await props.params;
     try {
         const userId = await getUserId(request);
         if (!userId) {
@@ -57,8 +58,9 @@ export async function GET(
  */
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    props: { params: Promise<{ id: string }> }
 ) {
+    const params = await props.params;
     try {
         const userId = await getUserId(request);
         if (!userId) {

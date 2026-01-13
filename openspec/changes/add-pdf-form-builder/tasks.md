@@ -33,14 +33,25 @@
 - [x] 5.5 Enable field repositioning and resizing (Dragging implemented)
 - [x] 5.6 Add coordinate tracking for field positions
 
-## 6. Form Persistence
 - [x] 6.1 Implement form save API endpoint (`/api/forms`)
 - [x] 6.2 Create form schema JSON structure (Implicit in database)
 - [x] 6.3 Add auto-save functionality (Manual save implemented for better UX)
 - [x] 6.4 Implement form update endpoint
 - [ ] 6.5 Add form versioning (optional for MVP)
 
-## 7. Form Builder Page
+## 7. Public Form & PDF Generation (Refined)
+- [x] 7.1 Implement Public Form View (web form only, no background PDF)
+- [x] 7.2 Implement Submission API to capture data
+- [x] 7.3 Create PDF Generation Service (using `pdf-lib` or similar)
+- [x] 7.4 Map form data to PDF coordinates
+- [x] 7.5 Implement "Download Filled PDF" functionality
+- [x] 7.5 Implement "Download Filled PDF" functionality
+- [x] 7.6 Store generated PDF (Implemented via immediate download response)
+- [x] 7.7 Implement "PDF Overlay Mode" for public view (Toggle between Form/PDF)
+- [x] 7.8 Re-integrate PDF Viewer with input overlay logic
+- [x] 7.9 Ensure Signature input works in Overlay Mode
+
+## 8. Form Builder Page
 - [x] 7.1 Create form builder layout (split pane)
 - [x] 7.2 Integrate field selector and PDF viewer
 - [x] 7.3 Add toolbar (save, preview, publish)
@@ -61,7 +72,7 @@
 - [ ] 9.5 Integration test: full form creation flow
 
 ## 10. Documentation
-- [ ] 10.1 Add inline code comments
+- [x] 10.1 Add inline code comments
 - [ ] 10.2 Document API endpoints
 - [ ] 10.3 Create user guide for form builder
-- [ ] 10.4 Update README with setup instructions
+- [x] 10.4 Update README with setup instructions

@@ -22,9 +22,13 @@ This change introduces two new capabilities:
 - **PDF Library**: View list of uploaded PDFs with metadata (name, upload date, size)
 - **PDF Selection**: Select a PDF to create or edit a form
 - **Form Field Editor**: Left pane with field type selector (text, number, dropdown, textarea, checkbox, signature)
-- **PDF Viewer**: Right pane displaying the PDF with interactive area selection
-- **Field Mapping**: Drag-and-drop or click to map form fields to PDF coordinates
-- **Form Persistence**: Save form schemas with field mappings per user account
+- **PDF Viewer & Mapper**: Right pane displaying the PDF for creating fields and mapping them to coordinates
+- **Field Mapping**: Drag-and-drop to define where inputs should appear on the final PDF
+- **Public Form View**: A clean, standard web form (not overlaying the PDF) for users to fill out data
+- **PDF Overlay View**: Alternative view where inputs are overlaid directly on the PDF (WYSIWYG), useful for forms with context/T&Cs
+- **PDF Generation**: On submission, data is overlaid onto the original PDF template
+- **Downloadable PDF**: Users can download the filled PDF document after submission
+- **Form Persistence**: Save form schemas and submissions
 
 ## Impact
 
