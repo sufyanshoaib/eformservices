@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { validatePdfBuffer } from '@/lib/pdf/validation';
 import { uploadPdfBufferToBlob } from '@/lib/pdf/upload';
+import { revalidatePath } from 'next/cache';
 
 // This is a placeholder for authentication
 // TODO: Replace with actual NextAuth session check
@@ -75,6 +76,11 @@ export async function POST(request: NextRequest) {
                 mimeType: file.type,
             },
         });
+
+        console.log(`Successfully saved PDF to database: ${pdf.id}`);
+
+        // Revalidate the PDF library page to show the new upload
+        revalidatePath('/dashboard/pdfs');
 
         return NextResponse.json({
             id: pdf.id,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { FormField } from '@/components/forms/form-canvas';
 import { cn } from '@/lib/utils';
 import { Layout, FileText, Loader2, CheckCircle, Check } from 'lucide-react';
@@ -33,6 +33,47 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
             [fieldId]: value
         }));
     };
+
+    // Sort fields by page and Y position to approximate reading order
+    const sortedFields = useMemo(() => {
+        return [...form.fieldMappings].sort((a, b) => {
+            if (a.page !== b.page) return a.page - b.page;
+            return a.y - b.y;
+        });
+    }, [form.fieldMappings]);
+
+    // Group fields for the form view (standard input list)
+    // Radio buttons with the same group name are grouped together
+    const groupedFields = useMemo(() => {
+        const result: { type: 'single' | 'group', title: string, fields: FormField[], id: string }[] = [];
+        const seenGroups = new Map<string, any>();
+
+        sortedFields.forEach((field) => {
+            if (field.type === 'radio' && field.groupName) {
+                const existingGroup = seenGroups.get(field.groupName);
+                if (existingGroup) {
+                    existingGroup.fields.push(field);
+                } else {
+                    const group = {
+                        type: 'group' as const,
+                        title: field.groupName,
+                        fields: [field],
+                        id: `group-${field.groupName}`
+                    };
+                    seenGroups.set(field.groupName, group);
+                    result.push(group);
+                }
+            } else {
+                result.push({
+                    type: 'single' as const,
+                    title: field.label,
+                    fields: [field],
+                    id: field.id
+                });
+            }
+        });
+        return result;
+    }, [sortedFields]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -118,14 +159,9 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
         );
     }
 
-    // Sort fields by page and Y position to approximate reading order
-    const sortedFields = [...form.fieldMappings].sort((a, b) => {
-        if (a.page !== b.page) return a.page - b.page;
-        return a.y - b.y;
-    });
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="h-screen bg-slate-50 flex flex-col">
             {/* Header */}
             <header className="bg-white border-b border-slate-200 h-16 shrink-0 px-4 sm:px-6 lg:px-8 flex items-center justify-between z-20 shadow-sm sticky top-0">
                 <h1 className="text-lg font-semibold text-slate-900 truncate max-w-xs sm:max-w-md">{form.name}</h1>
@@ -176,14 +212,31 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
                                 <p className="text-sm text-gray-500 mt-1">Please fill out the form below.</p>
                             </div>
                             <div className="px-8 py-6 space-y-6">
-                                {sortedFields.map((field) => (
-                                    <div key={field.id} className="space-y-2">
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            {field.label} {field.required && <span className="text-red-500">*</span>}
-                                        </label>
-                                        {renderInput(field, values[field.id] || '', (val) => handleInputChange(field.id, val), 'standard')}
-                                    </div>
-                                ))}
+                                {groupedFields.map((group) => {
+                                    const isGroup = group.type === 'group';
+                                    const firstField = group.fields[0];
+                                    const stateKey = isGroup ? group.title : firstField.id;
+
+                                    return (
+                                        <div key={group.id} className="space-y-3">
+                                            <label className="block text-sm font-semibold text-slate-900">
+                                                {group.title} {firstField.required && <span className="text-red-500">*</span>}
+                                            </label>
+                                            <div className={cn("space-y-3", isGroup && "pl-1 pt-1")}>
+                                                {group.fields.map((field) => (
+                                                    <div key={field.id}>
+                                                        {renderInput(
+                                                            field,
+                                                            values[stateKey] || '',
+                                                            (val) => handleInputChange(stateKey, val),
+                                                            'standard'
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -193,26 +246,27 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
                         onPageChange={setCurrentPage}
                         scale={scale}
                         onScaleChange={setScale}
-                    >
-                        {/* Overlay Inputs */}
-                        {(() => {
-                            const pageFields = form.fieldMappings.filter(f => f.page === currentPage);
-                            return pageFields.map((field) => (
-                                <div
-                                    key={field.id}
-                                    className="absolute"
-                                    style={{
-                                        left: `${field.x * scale}px`,
-                                        top: `${field.y * scale}px`,
-                                        width: `${field.width * scale}px`,
-                                        height: `${field.height * scale}px`,
-                                    }}
-                                >
-                                    {renderInput(field, values[field.id] || '', (val) => handleInputChange(field.id, val), 'overlay')}
-                                </div>
-                            ));
-                        })()}
-                    </PdfViewer>
+                        renderPageOverlay={(page) => {
+                            const pageFields = form.fieldMappings.filter(f => f.page === page);
+                            return pageFields.map((field) => {
+                                const stateKey = field.type === 'radio' ? (field.groupName || field.id) : field.id;
+                                return (
+                                    <div
+                                        key={field.id}
+                                        className="absolute"
+                                        style={{
+                                            left: `${field.x * scale}px`,
+                                            top: `${field.y * scale}px`,
+                                            width: `${field.width * scale}px`,
+                                            height: `${field.height * scale}px`,
+                                        }}
+                                    >
+                                        {renderInput(field, values[stateKey] || '', (val) => handleInputChange(stateKey, val), 'overlay')}
+                                    </div>
+                                );
+                            });
+                        }}
+                    />
                 )}
             </main>
         </div>
@@ -273,6 +327,36 @@ function renderInput(
                         className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         checked={value === 'true'}
                         onChange={(e) => onChange(e.target.checked ? 'true' : '')}
+                    />
+                    <label htmlFor={`field-${field.id}`} className="text-sm text-gray-700">
+                        {field.label}
+                    </label>
+                </div>
+            );
+        case 'radio':
+            const groupKey = field.groupName || field.id;
+            const isSelected = value === field.value;
+
+            if (isOverlay) {
+                return (
+                    <div
+                        className="w-full h-full flex items-center justify-center cursor-pointer bg-blue-50/20 hover:bg-blue-50/40"
+                        onClick={() => onChange(field.value || '')}
+                    >
+                        {isSelected && <Check className="w-5 h-5 text-black" />}
+                    </div>
+                )
+            }
+
+            return (
+                <div className="flex items-center space-x-2">
+                    <input
+                        type="radio"
+                        id={`field-${field.id}`}
+                        name={groupKey}
+                        className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        checked={isSelected}
+                        onChange={() => onChange(field.value || '')}
                     />
                     <label htmlFor={`field-${field.id}`} className="text-sm text-gray-700">
                         {field.label}

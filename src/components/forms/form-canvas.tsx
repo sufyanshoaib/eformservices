@@ -15,6 +15,8 @@ export interface FormField {
     height: number;
     page: number;
     required?: boolean;
+    groupName?: string;
+    value?: string;
 }
 
 interface FormCanvasProps {
@@ -62,10 +64,11 @@ export default function FormCanvas({
                 label: `New ${type} field`,
                 x,
                 y,
-                width: 150, // Default width
-                height: 40, // Default height
+                width: type === 'radio' || type === 'checkbox' ? 40 : 150, // Smaller default for options
+                height: 40,
                 page: currentPage,
-                required: false
+                required: false,
+                ...(type === 'radio' ? { groupName: 'group_1', value: 'option_1' } : {})
             });
         }
     };
@@ -133,8 +136,19 @@ export default function FormCanvas({
                         onClick={(e) => e.stopPropagation()} // Prevent deselection
                     >
                         <GripVertical className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0 cursor-grab active:cursor-grabbing" />
-                        <span className="text-xs font-medium text-blue-900 truncate select-none pointer-events-none w-full">
-                            {field.label} {field.required && <span className="text-red-500">*</span>}
+                        <span className="text-[10px] font-medium text-blue-900 leading-tight select-none pointer-events-none w-full flex flex-col">
+                            {field.type === 'radio' ? (
+                                <>
+                                    <span className="truncate">{field.label}</span>
+                                    <span className="opacity-60 truncate">G: {field.groupName || 'none'}</span>
+                                    <span className="opacity-60 truncate">V: {field.value || 'none'}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="truncate">{field.label}</span>
+                                    {field.required && <span className="text-red-500 absolute top-1 right-1">*</span>}
+                                </>
+                            )}
                         </span>
 
                         {/* Delete Button */}

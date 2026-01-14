@@ -12,7 +12,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 interface PdfViewerProps {
     url: string;
     onPageChange?: (page: number) => void;
-    children?: React.ReactNode; // For interactive overlay
+    renderPageOverlay?: (page: number) => React.ReactNode;
     scale?: number;
     onScaleChange?: (scale: number) => void;
 }
@@ -20,7 +20,7 @@ interface PdfViewerProps {
 export default function PdfViewer({
     url,
     onPageChange,
-    children,
+    renderPageOverlay,
     scale = 1.0,
     onScaleChange
 }: PdfViewerProps) {
@@ -28,21 +28,22 @@ export default function PdfViewer({
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [loading, setLoading] = useState(true);
     const containerRef = useRef<HTMLDivElement>(null);
+    const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
         setLoading(false);
     }
 
-    const changePage = (offset: number) => {
-        setPageNumber(prevPageNumber => {
-            const newPage = prevPageNumber + offset;
-            if (newPage >= 1 && newPage <= numPages) {
-                onPageChange?.(newPage);
-                return newPage;
-            }
-            return prevPageNumber;
-        });
+    const scrollToPage = (page: number) => {
+        const pageElement = pageRefs.current[page - 1];
+        const container = containerRef.current;
+        if (pageElement && container) {
+            const containerRect = container.getBoundingClientRect();
+            const pageRect = pageElement.getBoundingClientRect();
+            const scrollTop = container.scrollTop + (pageRect.top - containerRect.top) - 20;
+            container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+        }
     };
 
     const handleZoom = (delta: number) => {
@@ -50,13 +51,49 @@ export default function PdfViewer({
         onScaleChange?.(newScale);
     };
 
+    // Scroll detection to update current page number
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            if (numPages === 0) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const containerCenter = containerRect.top + containerRect.height / 2;
+
+            let currentVisiblePage = 1;
+            let minDistance = Infinity;
+
+            pageRefs.current.forEach((pageRef, index) => {
+                if (!pageRef) return;
+                const rect = pageRef.getBoundingClientRect();
+                const pageCenter = rect.top + rect.height / 2;
+                const distance = Math.abs(containerCenter - pageCenter);
+
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    currentVisiblePage = index + 1;
+                }
+            });
+
+            if (currentVisiblePage !== pageNumber) {
+                setPageNumber(currentVisiblePage);
+                onPageChange?.(currentVisiblePage);
+            }
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [numPages, pageNumber, onPageChange]);
+
     return (
-        <div className="flex flex-col h-full bg-slate-100">
+        <div className="flex flex-col h-full bg-slate-100 overflow-hidden">
             {/* Toolbar */}
-            <div className="bg-white border-b border-slate-200 p-2 flex items-center justify-between shadow-sm z-10">
+            <div className="bg-white border-b border-slate-200 p-2 flex items-center justify-between shadow-sm z-20 shrink-0 sticky top-0">
                 <div className="flex items-center space-x-2">
                     <button
-                        onClick={() => changePage(-1)}
+                        onClick={() => scrollToPage(pageNumber - 1)}
                         disabled={pageNumber <= 1}
                         className="px-2 py-1 text-sm bg-slate-100 hover:bg-slate-200 rounded disabled:opacity-50"
                     >
@@ -66,7 +103,7 @@ export default function PdfViewer({
                         Page {pageNumber} of {numPages || '--'}
                     </span>
                     <button
-                        onClick={() => changePage(1)}
+                        onClick={() => scrollToPage(pageNumber + 1)}
                         disabled={pageNumber >= numPages}
                         className="px-2 py-1 text-sm bg-slate-100 hover:bg-slate-200 rounded disabled:opacity-50"
                     >
@@ -94,50 +131,62 @@ export default function PdfViewer({
             </div>
 
             {/* PDF Container */}
-            <div className="flex-1 overflow-auto p-8 flex justify-center relative" ref={containerRef}>
-                <div className="relative shadow-lg border border-slate-200 bg-white" style={{ width: 'fit-content' }}>
-                    <Document
-                        file={url}
-                        onLoadSuccess={onDocumentLoadSuccess}
-                        loading={
-                            <div className="flex items-center justify-center p-20 text-slate-400">
-                                <Loader2 className="w-8 h-8 animate-spin mr-2" />
-                                <span>Loading PDF...</span>
-                            </div>
-                        }
-                        error={
-                            <div className="p-20 text-red-500 flex flex-col items-center">
-                                <AlertCircle className="w-8 h-8 mb-2" />
-                                <p>Failed to load PDF</p>
-                            </div>
-                        }
-                    >
-                        <Page
-                            pageNumber={pageNumber}
-                            scale={scale}
-                            className="bg-white"
-                            renderTextLayer={false}
-                            renderAnnotationLayer={false}
-                        />
+            <div
+                className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center gap-8 relative scroll-smooth"
+                ref={containerRef}
+            >
+                <Document
+                    file={url}
+                    onLoadSuccess={onDocumentLoadSuccess}
+                    loading={
+                        <div className="flex items-center justify-center p-20 text-slate-400">
+                            <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                            <span>Loading PDF...</span>
+                        </div>
+                    }
+                    error={
+                        <div className="p-20 text-red-500 flex flex-col items-center">
+                            <AlertCircle className="w-8 h-8 mb-2" />
+                            <p>Failed to load PDF</p>
+                        </div>
+                    }
+                    className="flex flex-col gap-8"
+                >
+                    {Array.from(new Array(numPages), (el, index) => (
+                        <div
+                            key={`page_${index + 1}`}
+                            ref={el => { pageRefs.current[index] = el }}
+                            className="relative shadow-lg border border-slate-200 bg-white"
+                            style={{ width: 'fit-content' }}
+                        >
+                            <Page
+                                pageNumber={index + 1}
+                                scale={scale}
+                                className="bg-white"
+                                renderTextLayer={false}
+                                renderAnnotationLayer={false}
+                            />
 
-                        {/* Overlay Layer for Form Fields */}
-                        {!loading && (
-                            <div
-                                className="absolute inset-0 z-10"
-                                style={{
-                                    width: '100%',
-                                    height: '100%'
-                                }}
-                            >
-                                {children}
-                            </div>
-                        )}
-                    </Document>
-                </div>
+                            {/* Overlay Layer for Form Fields */}
+                            {!loading && renderPageOverlay && (
+                                <div
+                                    className="absolute inset-0 z-10"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%'
+                                    }}
+                                >
+                                    {renderPageOverlay(index + 1)}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </Document>
             </div>
         </div>
     );
 }
+
 
 // Helper icon component for error state
 function AlertCircle({ className }: { className?: string }) {

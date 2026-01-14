@@ -36,7 +36,7 @@ export default function FieldProperties({
             <div className="space-y-4">
                 <div>
                     <label className="block text-xs font-medium text-slate-700 mb-1">
-                        Label
+                        Display Label
                     </label>
                     <input
                         type="text"
@@ -44,6 +44,9 @@ export default function FieldProperties({
                         onChange={(e) => onUpdate(field.id, { label: e.target.value })}
                         className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <p className="mt-1 text-[10px] text-slate-500 italic">
+                        The text shown to the user in the form list.
+                    </p>
                 </div>
 
                 <div>
@@ -70,6 +73,41 @@ export default function FieldProperties({
                         Required field
                     </label>
                 </div>
+
+                {field.type === 'radio' && (
+                    <div className="space-y-4 pt-4 border-t border-slate-200">
+                        <h4 className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                            Radio Logic
+                        </h4>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                Group Name (Mutual Exclusivity)
+                            </label>
+                            <input
+                                type="text"
+                                value={field.groupName || ''}
+                                onChange={(e) => onUpdate(field.id, { groupName: e.target.value })}
+                                placeholder="e.g. Application Type"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">
+                                Option Value
+                            </label>
+                            <input
+                                type="text"
+                                value={field.value || ''}
+                                onChange={(e) => onUpdate(field.id, { value: e.target.value })}
+                                placeholder="e.g. yes"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p className="mt-1 text-[10px] text-slate-500 italic">
+                                This value is saved when this option is ticked.
+                            </p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Dynamic properties based on type */}
                 <div className="pt-4 border-t border-slate-100">

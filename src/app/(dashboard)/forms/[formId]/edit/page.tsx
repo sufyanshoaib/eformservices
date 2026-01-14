@@ -205,8 +205,8 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
                         onClick={handlePublishToggle}
                         disabled={saving}
                         className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${isPublished
-                                ? 'bg-white border border-slate-300 text-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
-                                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            ? 'bg-white border border-slate-300 text-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                             }`}
                     >
                         {saving ? (
@@ -240,18 +240,19 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
                         onPageChange={setCurrentPage}
                         scale={scale}
                         onScaleChange={setScale}
-                    >
-                        <FormCanvas
-                            fields={fields}
-                            onAddField={handleAddField}
-                            onUpdateField={handleUpdateField}
-                            onRemoveField={handleRemoveField}
-                            onSelectField={setSelectedFieldId}
-                            selectedFieldId={selectedFieldId}
-                            currentPage={currentPage}
-                            scale={scale}
-                        />
-                    </PdfViewer>
+                        renderPageOverlay={(page) => (
+                            <FormCanvas
+                                fields={fields}
+                                onAddField={handleAddField}
+                                onUpdateField={handleUpdateField}
+                                onRemoveField={handleRemoveField}
+                                onSelectField={setSelectedFieldId}
+                                selectedFieldId={selectedFieldId}
+                                currentPage={page}
+                                scale={scale}
+                            />
+                        )}
+                    />
                 </main>
 
                 {/* Right Pane: Properties */}

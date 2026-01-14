@@ -6,10 +6,11 @@ import {
     List,
     AlignLeft,
     CheckSquare,
-    PenTool
+    PenTool,
+    CircleDot
 } from 'lucide-react';
 
-export type FieldType = 'text' | 'number' | 'dropdown' | 'textarea' | 'checkbox' | 'signature';
+export type FieldType = 'text' | 'number' | 'dropdown' | 'textarea' | 'checkbox' | 'radio' | 'signature';
 
 interface DraggableFieldProps {
     type: FieldType;
@@ -69,6 +70,11 @@ export default function FieldSelector() {
                     type="checkbox"
                     label="Checkbox"
                     icon={<CheckSquare className="w-4 h-4 text-indigo-500" />}
+                />
+                <DraggableField
+                    type="radio"
+                    label="Radio Button"
+                    icon={<CircleDot className="w-4 h-4 text-cyan-500" />}
                 />
                 <DraggableField
                     type="signature"
