@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Prisma } from '@prisma/client';
 import { CopyLinkButton } from '@/components/dashboard/copy-link-button';
+import { ShareFormButton } from '@/components/dashboard/share-form-button';
 
 async function getPdfs() {
     try {
@@ -161,7 +162,10 @@ export default async function PdfLibraryPage() {
                                         </div>
                                         <div className="flex items-center space-x-1">
                                             {form?.isPublished && form?.shareableLink && (
-                                                <CopyLinkButton shareableLink={form.shareableLink} />
+                                                <>
+                                                    <CopyLinkButton shareableLink={form.shareableLink} />
+                                                    <ShareFormButton shareableLink={form.shareableLink} formName={form.name} />
+                                                </>
                                             )}
                                             <form action={deletePdfAction}>
                                                 <input type="hidden" name="pdfId" value={pdf.id} />
