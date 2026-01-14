@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { incrementFormView } from '@/actions/analytics';
 import type { FormField } from '@/components/forms/form-canvas';
 import { cn } from '@/lib/utils';
 import { Layout, FileText, Loader2, CheckCircle, Check } from 'lucide-react';
@@ -17,8 +18,19 @@ interface PublicFormClientProps {
 }
 
 export default function PublicFormClient({ form }: PublicFormClientProps) {
-    const [viewMode, setViewMode] = useState<'form' | 'pdf'>('form');
-    const [scale, setScale] = useState(1.0);
+    // Track view on mount
+    useEffect(() => {
+        incrementFormView(form.id);
+    }, [form.id]);
+
+    const [viewMode, setViewMode] = useState<'form' | 'pdf'>('pdf');
+    const [scale, setScale] = useState(() => {
+        // Set initial scale based on screen size
+        if (typeof window !== 'undefined') {
+            return window.innerWidth < 768 ? 0.8 : 1.5;
+        }
+        return 1.5;
+    });
     const [currentPage, setCurrentPage] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -26,6 +38,25 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
     // Store form values: { [fieldId]: value }
     const [values, setValues] = useState<Record<string, string>>({});
     const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+
+    // Adjust scale when screen size changes
+    useEffect(() => {
+        const handleResize = () => {
+            const isMobile = window.innerWidth < 768;
+            setScale(prevScale => {
+                // Only auto-adjust if user hasn't manually zoomed much
+                if (isMobile && prevScale > 1.2) {
+                    return 0.8;
+                } else if (!isMobile && prevScale < 1.0) {
+                    return 1.5;
+                }
+                return prevScale;
+            });
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const handleInputChange = (fieldId: string, value: string) => {
         setValues(prev => ({

@@ -27,7 +27,12 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
     const [form, setForm] = useState<any>(null);
     const [fields, setFields] = useState<FormField[]>([]);
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
-    const [scale, setScale] = useState(1.0);
+    const [scale, setScale] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth < 768 ? 0.8 : 1.0;
+        }
+        return 1.0;
+    });
     const [currentPage, setCurrentPage] = useState(1);
 
     // Publish State

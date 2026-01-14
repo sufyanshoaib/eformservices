@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { Loader2, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
@@ -27,13 +27,36 @@ export default function PdfViewer({
     const [numPages, setNumPages] = useState<number>(0);
     const [pageNumber, setPageNumber] = useState<number>(1);
     const [loading, setLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const pageRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    // Detect mobile screen size
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
         setNumPages(numPages);
         setLoading(false);
     }
+
+    const changePage = (offset: number) => {
+        setPageNumber(prevPageNumber => {
+            const newPage = prevPageNumber + offset;
+            if (newPage >= 1 && newPage <= numPages) {
+                onPageChange?.(newPage);
+                return newPage;
+            }
+            return prevPageNumber;
+        });
+    };
 
     const scrollToPage = (page: number) => {
         const pageElement = pageRefs.current[page - 1];
@@ -51,8 +74,10 @@ export default function PdfViewer({
         onScaleChange?.(newScale);
     };
 
-    // Scroll detection to update current page number
+    // Scroll detection to update current page number (desktop only)
     useEffect(() => {
+        if (isMobile) return;
+
         const container = containerRef.current;
         if (!container) return;
 
@@ -85,7 +110,7 @@ export default function PdfViewer({
 
         container.addEventListener('scroll', handleScroll);
         return () => container.removeEventListener('scroll', handleScroll);
-    }, [numPages, pageNumber, onPageChange]);
+    }, [numPages, pageNumber, onPageChange, isMobile]);
 
     return (
         <div className="flex flex-col h-full bg-slate-100 overflow-hidden">
@@ -93,7 +118,7 @@ export default function PdfViewer({
             <div className="bg-white border-b border-slate-200 p-2 flex items-center justify-between shadow-sm z-20 shrink-0 sticky top-0">
                 <div className="flex items-center space-x-2">
                     <button
-                        onClick={() => scrollToPage(pageNumber - 1)}
+                        onClick={() => isMobile ? changePage(-1) : scrollToPage(pageNumber - 1)}
                         disabled={pageNumber <= 1}
                         className="px-2 py-1 text-sm bg-slate-100 hover:bg-slate-200 rounded disabled:opacity-50"
                     >
@@ -103,7 +128,7 @@ export default function PdfViewer({
                         Page {pageNumber} of {numPages || '--'}
                     </span>
                     <button
-                        onClick={() => scrollToPage(pageNumber + 1)}
+                        onClick={() => isMobile ? changePage(1) : scrollToPage(pageNumber + 1)}
                         disabled={pageNumber >= numPages}
                         className="px-2 py-1 text-sm bg-slate-100 hover:bg-slate-200 rounded disabled:opacity-50"
                     >
@@ -132,35 +157,30 @@ export default function PdfViewer({
 
             {/* PDF Container */}
             <div
-                className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center gap-8 relative scroll-smooth"
+                className={isMobile ? "flex-1 overflow-auto p-4 flex justify-center items-start relative" : "flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center gap-8 relative scroll-smooth"}
                 ref={containerRef}
             >
-                <Document
-                    file={url}
-                    onLoadSuccess={onDocumentLoadSuccess}
-                    loading={
-                        <div className="flex items-center justify-center p-20 text-slate-400">
-                            <Loader2 className="w-8 h-8 animate-spin mr-2" />
-                            <span>Loading PDF...</span>
-                        </div>
-                    }
-                    error={
-                        <div className="p-20 text-red-500 flex flex-col items-center">
-                            <AlertCircle className="w-8 h-8 mb-2" />
-                            <p>Failed to load PDF</p>
-                        </div>
-                    }
-                    className="flex flex-col gap-8"
-                >
-                    {Array.from(new Array(numPages), (el, index) => (
-                        <div
-                            key={`page_${index + 1}`}
-                            ref={el => { pageRefs.current[index] = el }}
-                            className="relative shadow-lg border border-slate-200 bg-white"
-                            style={{ width: 'fit-content' }}
+                {isMobile ? (
+                    // Mobile: Single page view
+                    <div className="relative shadow-lg border border-slate-200 bg-white max-w-full" style={{ width: 'fit-content' }}>
+                        <Document
+                            file={url}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            loading={
+                                <div className="flex items-center justify-center p-20 text-slate-400">
+                                    <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                                    <span>Loading PDF...</span>
+                                </div>
+                            }
+                            error={
+                                <div className="p-20 text-red-500 flex flex-col items-center">
+                                    <AlertCircle className="w-8 h-8 mb-2" />
+                                    <p>Failed to load PDF</p>
+                                </div>
+                            }
                         >
                             <Page
-                                pageNumber={index + 1}
+                                pageNumber={pageNumber}
                                 scale={scale}
                                 className="bg-white"
                                 renderTextLayer={false}
@@ -176,17 +196,65 @@ export default function PdfViewer({
                                         height: '100%'
                                     }}
                                 >
-                                    {renderPageOverlay(index + 1)}
+                                    {renderPageOverlay(pageNumber)}
                                 </div>
                             )}
-                        </div>
-                    ))}
-                </Document>
+                        </Document>
+                    </div>
+                ) : (
+                    // Desktop: Vertical scrolling with all pages
+                    <Document
+                        file={url}
+                        onLoadSuccess={onDocumentLoadSuccess}
+                        loading={
+                            <div className="flex items-center justify-center p-20 text-slate-400">
+                                <Loader2 className="w-8 h-8 animate-spin mr-2" />
+                                <span>Loading PDF...</span>
+                            </div>
+                        }
+                        error={
+                            <div className="p-20 text-red-500 flex flex-col items-center">
+                                <AlertCircle className="w-8 h-8 mb-2" />
+                                <p>Failed to load PDF</p>
+                            </div>
+                        }
+                        className="flex flex-col gap-8"
+                    >
+                        {Array.from(new Array(numPages), (el, index) => (
+                            <div
+                                key={`page_${index + 1}`}
+                                ref={el => { pageRefs.current[index] = el }}
+                                className="relative shadow-lg border border-slate-200 bg-white"
+                                style={{ width: 'fit-content' }}
+                            >
+                                <Page
+                                    pageNumber={index + 1}
+                                    scale={scale}
+                                    className="bg-white"
+                                    renderTextLayer={false}
+                                    renderAnnotationLayer={false}
+                                />
+
+                                {/* Overlay Layer for Form Fields */}
+                                {!loading && renderPageOverlay && (
+                                    <div
+                                        className="absolute inset-0 z-10"
+                                        style={{
+                                            width: '100%',
+                                            height: '100%'
+                                        }}
+                                    >
+                                        {renderPageOverlay(index + 1)}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </Document>
+                )}
             </div>
         </div>
     );
 }
-
 
 // Helper icon component for error state
 function AlertCircle({ className }: { className?: string }) {

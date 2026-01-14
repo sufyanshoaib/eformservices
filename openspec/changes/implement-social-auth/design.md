@@ -4,18 +4,27 @@
 We will use the existing NextAuth.js v5 setup. Since NextAuth v5 integrates closely with Server Actions, the login page will be a Server Component that renders a client-side form (or uses server actions directly) for the buttons.
 
 ### Page Structure
--   **Route**: `/app/(auth)/auth/signin/page.tsx`
-    - NOTE: The `auth.ts` config points to `/auth/signin`. The folder structure should match.
-    - We will place it in a `(auth)` group to potentially share layout (like a centered card layout).
+-   **Sign In**: `/app/(auth)/auth/signin/page.tsx`
+-   **Sign Up**: `/app/(auth)/auth/signup/page.tsx`
+-   Both pages will use a shared layout for a centered card.
 
 ### UI Components
-We will use a "Card" based layout for the login box.
--   **Title**: "Welcome back"
--   **Description**: "Sign in to your account to continue"
--   **Social Buttons**:
-    -   [G] Sign in with Google (Client Action: `signIn('google')`)
-    -   [f] Sign in with Facebook (Client Action: `signIn('facebook')`)
--   **Divider**: "Or continue with" (if we add email later, but for now just social) -> Actually `auth.ts` implies pure social for now, though typical SaaS needs email. The user request specifically mentioned Google/Facebook. We will stick to those for the MVP but structure the card to allow Email addition easily.
+We will use a "Card" based layout for the auth box.
+-   **Sign In**:
+    -   Email & Password input fields.
+    -   "Forgot password?" link (placeholder for now).
+    -   Divider: "Or continue with".
+    -   Social Buttons (Google, Facebook).
+    -   "Don't have an account? Sign up" link.
+-   **Sign Up**:
+    -   Name, Email, and Password input fields.
+    -   "Already have an account? Sign in" link.
+
+### Auth Logic
+-   **Credentials Provider**: We will add a `Credentials` provider to `auth.ts` to handle email/password validation using `bcryptjs`.
+-   **Server Actions**:
+    -   `signInWithCredentials`: Validate email/password and call NextAuth `signIn`.
+    -   `signUpWithCredentials`: Create user in Prisma with hashed password.
 
 ### Component Composition
 ```tsx

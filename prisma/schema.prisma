@@ -91,6 +91,7 @@ model Form {
   name          String
   fieldMappings Json     // Array of field definitions with coordinates
   isPublished   Boolean  @default(false)
+  views         Int      @default(0)
   shareableLink String?  @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
