@@ -39,12 +39,76 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
     ],
     callbacks: {
-        async session({ session, user }) {
+        async signIn({ user, account, profile, email }) {
+            // Allow sign in for OAuth providers
+            if (account?.provider === "google" || account?.provider === "facebook") {
+                // Check if a user with this email already exists
+                if (user.email) {
+                    const existingUser = await prisma.user.findUnique({
+                        where: { email: user.email },
+                        include: { accounts: true },
+                    });
+
+                    if (existingUser) {
+                        // Check if this OAuth account is already linked
+                        const accountExists = existingUser.accounts.some(
+                            (acc) => acc.provider === account.provider && acc.providerAccountId === account.providerAccountId
+                        );
+
+                        if (!accountExists) {
+                            // Link the OAuth account to the existing user
+                            await prisma.account.create({
+                                data: {
+                                    userId: existingUser.id,
+                                    type: account.type,
+                                    provider: account.provider,
+                                    providerAccountId: account.providerAccountId,
+                                    access_token: account.access_token,
+                                    expires_at: account.expires_at,
+                                    id_token: account.id_token,
+                                    refresh_token: account.refresh_token,
+                                    scope: account.scope,
+                                    session_state: account.session_state as string,
+                                    token_type: account.token_type,
+                                },
+                            });
+                        }
+                        // Update user info if needed
+                        await prisma.user.update({
+                            where: { id: existingUser.id },
+                            data: {
+                                name: user.name || existingUser.name,
+                                image: user.image || existingUser.image,
+                                emailVerified: existingUser.emailVerified || new Date(),
+                            },
+                        });
+                    }
+                }
+                return true;
+            }
+            // Allow credentials provider to proceed normally
+            return true;
+        },
+        async session({ session, user, token }) {
             // Add user ID to session
             if (session.user) {
-                session.user.id = user.id;
+                // For database sessions (OAuth providers)
+                if (user) {
+                    session.user.id = user.id;
+                }
+                // For JWT sessions (credentials provider)
+                else if (token?.sub) {
+                    session.user.id = token.sub;
+                }
             }
             return session;
+        },
+        async jwt({ token, user }) {
+            // For credentials provider, add user ID to token
+            if (user) {
+                token.sub = user.id;
+            }
+            return token;
         },
     },
     pages: {

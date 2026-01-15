@@ -10,6 +10,7 @@ import FieldSelector from '@/components/forms/field-selector';
 import PdfViewer from '@/components/pdf/pdf-viewer';
 import FormCanvas, { FormField } from '@/components/forms/form-canvas';
 import FieldProperties from '@/components/forms/field-properties';
+import { AIMappingButton, AISuggestionsActions } from '@/components/forms/ai-mapping-button';
 
 interface FormBuilderPageProps {
     params: Promise<{
@@ -22,6 +23,7 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     // State
     const [form, setForm] = useState<any>(null);
@@ -147,6 +149,30 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    // AI Mapping handlers
+    const handleAISuggestions = (suggestions: Omit<FormField, 'id'>[]) => {
+        const newFields = suggestions.map(s => ({
+            ...s,
+            id: nanoid(),
+        }));
+        setFields([...fields, ...newFields]);
+    };
+
+    const handleConfirmAllSuggestions = () => {
+        // Convert AI suggestions to regular fields
+        setFields(fields.map(f =>
+            f.isAISuggestion ? { ...f, isAISuggestion: false, confidence: undefined } : f
+        ));
+    };
+
+    const handleClearAllSuggestions = () => {
+        // Remove all AI suggestions
+        setFields(fields.filter(f => !f.isAISuggestion));
+        setSelectedFieldId(null);
+    };
+
+    const aiSuggestionCount = fields.filter(f => f.isAISuggestion).length;
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -236,7 +262,32 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
             {/* Builder Workspace */}
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Pane: Field Selector */}
-                <FieldSelector />
+                <div className="w-80 bg-white border-r border-slate-200 flex flex-col overflow-hidden">
+                    {/* AI Auto-Mapping */}
+                    <div className="p-4 border-b border-slate-200 space-y-3">
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-slate-700">AI Auto-Mapping</h2>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold text-purple-700 bg-purple-100 rounded-full animate-pulse">
+                                Beta
+                            </span>
+                        </div>
+                        <AIMappingButton
+                            pdfId={form.pdfId}
+                            onSuggestionsReceived={handleAISuggestions}
+                            disabled={saving || isAnalyzing}
+                        />
+                        {aiSuggestionCount > 0 && (
+                            <AISuggestionsActions
+                                suggestionCount={aiSuggestionCount}
+                                onConfirmAll={handleConfirmAllSuggestions}
+                                onClearAll={handleClearAllSuggestions}
+                            />
+                        )}
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                        <FieldSelector />
+                    </div>
+                </div>
 
                 {/* Center Pane: PDF Canvas */}
                 <main className="flex-1 overflow-hidden relative">

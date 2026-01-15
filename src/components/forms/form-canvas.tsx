@@ -17,6 +17,8 @@ export interface FormField {
     required?: boolean;
     groupName?: string;
     value?: string;
+    isAISuggestion?: boolean; // Flag to mark AI-suggested fields
+    confidence?: number; // AI confidence score (0-1)
 }
 
 interface FormCanvasProps {
@@ -43,7 +45,10 @@ export default function FormCanvas({
     const canvasRef = useRef<HTMLDivElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
+    const [isResizing, setIsResizing] = useState(false);
+    const [resizedFieldId, setResizedFieldId] = useState<string | null>(null);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [initialResizeState, setInitialResizeState] = useState({ x: 0, y: 0, width: 0, height: 0 });
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
@@ -76,14 +81,34 @@ export default function FormCanvas({
     const handleMouseDown = (e: React.MouseEvent, field: FormField) => {
         e.stopPropagation();
         onSelectField(field.id);
+
+        // Don't start dragging if we clicked a resize handle
+        if ((e.target as HTMLElement).dataset.resizeHandle) {
+            return;
+        }
+
         setIsDragging(true);
         setDraggedFieldId(field.id);
 
         // Calculate offset from top-left of the field element
-        const rect = (e.target as HTMLElement).getBoundingClientRect();
+        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
         setDragOffset({
             x: e.clientX - rect.left,
             y: e.clientY - rect.top
+        });
+    };
+
+    const handleResizeStart = (e: React.MouseEvent, field: FormField) => {
+        e.stopPropagation();
+        e.preventDefault(); // Prevent text selection
+
+        setIsResizing(true);
+        setResizedFieldId(field.id);
+        setInitialResizeState({
+            x: e.clientX,
+            y: e.clientY,
+            width: field.width,
+            height: field.height
         });
     };
 
@@ -96,12 +121,23 @@ export default function FormCanvas({
             const y = (e.clientY - canvasRect.top - dragOffset.y) / scale;
 
             onUpdateField(draggedFieldId, { x, y });
+        } else if (isResizing && resizedFieldId) {
+            const dx = (e.clientX - initialResizeState.x) / scale;
+            const dy = (e.clientY - initialResizeState.y) / scale;
+
+            // Enforce minimum dimensions
+            const newWidth = Math.max(20, initialResizeState.width + dx);
+            const newHeight = Math.max(20, initialResizeState.height + dy);
+
+            onUpdateField(resizedFieldId, { width: newWidth, height: newHeight });
         }
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
         setDraggedFieldId(null);
+        setIsResizing(false);
+        setResizedFieldId(null);
     };
 
     return (
@@ -129,14 +165,22 @@ export default function FormCanvas({
                             cursor: isDragging && draggedFieldId === field.id ? 'grabbing' : 'grab'
                         }}
                         className={cn(
-                            "bg-blue-100/80 border-2 border-blue-500 rounded flex items-center px-2 shadow-sm transition-shadow group hover:shadow-md hover:bg-blue-100",
-                            selectedFieldId === field.id && "ring-2 ring-blue-600 ring-offset-1 z-50 bg-blue-200"
+                            field.isAISuggestion
+                                ? "bg-purple-100/80 border-2 border-purple-500 border-dashed rounded flex items-center px-2 shadow-sm transition-shadow group hover:shadow-md hover:bg-purple-100"
+                                : "bg-blue-100/80 border-2 border-blue-500 rounded flex items-center px-2 shadow-sm transition-shadow group hover:shadow-md hover:bg-blue-100",
+                            selectedFieldId === field.id && (field.isAISuggestion ? "ring-2 ring-purple-600 ring-offset-1 z-50 bg-purple-200" : "ring-2 ring-blue-600 ring-offset-1 z-50 bg-blue-200")
                         )}
                         onMouseDown={(e) => handleMouseDown(e, field)}
                         onClick={(e) => e.stopPropagation()} // Prevent deselection
                     >
-                        <GripVertical className="h-4 w-4 text-blue-400 mr-2 flex-shrink-0 cursor-grab active:cursor-grabbing" />
-                        <span className="text-[10px] font-medium text-blue-900 leading-tight select-none pointer-events-none w-full flex flex-col">
+                        <GripVertical className={cn(
+                            "h-4 w-4 mr-2 flex-shrink-0 cursor-grab active:cursor-grabbing",
+                            field.isAISuggestion ? "text-purple-400" : "text-blue-400"
+                        )} />
+                        <span className={cn(
+                            "text-[10px] font-medium leading-tight select-none pointer-events-none w-full flex flex-col",
+                            field.isAISuggestion ? "text-purple-900" : "text-blue-900"
+                        )}>
                             {field.type === 'radio' ? (
                                 <>
                                     <span className="truncate">{field.label}</span>
@@ -145,7 +189,12 @@ export default function FormCanvas({
                                 </>
                             ) : (
                                 <>
-                                    <span className="truncate">{field.label}</span>
+                                    <span className="truncate">
+                                        {field.label}
+                                        {field.isAISuggestion && field.confidence && (
+                                            <span className="ml-1 opacity-60">({Math.round(field.confidence * 100)}%)</span>
+                                        )}
+                                    </span>
                                     {field.required && <span className="text-red-500 absolute top-1 right-1">*</span>}
                                 </>
                             )}
@@ -165,15 +214,15 @@ export default function FormCanvas({
                             </button>
                         )}
 
-                        {/* Resize Handle (basic implementation) */}
+                        {/* Resize Handle */}
                         {selectedFieldId === field.id && (
                             <div
-                                className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 cursor-se-resize rounded-tl"
-                                onMouseDown={(e) => {
-                                    e.stopPropagation();
-                                    // Implement resize logic here (omitted for brevity)
-                                }}
-                            />
+                                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 z-50"
+                                data-resize-handle="true"
+                                onMouseDown={(e) => handleResizeStart(e, field)}
+                            >
+                                <div className="w-2 h-2 bg-blue-500 rounded-sm" data-resize-handle="true" />
+                            </div>
                         )}
                     </div>
                 ))}

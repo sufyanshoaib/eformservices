@@ -27,6 +27,7 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
 
         // 3. Embed font
         const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const zapfDingbatsFont = await pdfDoc.embedFont(StandardFonts.ZapfDingbats);
 
         // 4. Get pages
         const pages = pdfDoc.getPages();
@@ -57,13 +58,19 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
 
             // Draw content
             try {
-                if (field.type === 'checkbox') {
-                    if (field.value === 'true') {
-                        page.drawText('X', {
-                            x: x + (w / 2) - 4,
-                            y: textY,
-                            size: 14,
-                            font: helveticaFont,
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    // Check for common truthy values
+                    if (field.value === 'true' || field.value === 'checked' || field.value === 'yes' || field.value === 'on') {
+                        // '4' in ZapfDingbats is a heavy checkmark (✔)
+                        // '3' is a light checkmark (✓)
+                        // Using '4' for better visibility
+                        const checkmarkSize = Math.min(w, h) * 0.8; // Scale to fit
+
+                        page.drawText('4', {
+                            x: x + (w - checkmarkSize) / 2, // Center horizontally
+                            y: y + (h - checkmarkSize) / 2, // Center vertically (approx)
+                            size: checkmarkSize,
+                            font: zapfDingbatsFont,
                             color: rgb(0, 0, 0),
                         });
                     }
