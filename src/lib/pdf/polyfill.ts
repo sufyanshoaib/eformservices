@@ -14,7 +14,7 @@ if (typeof root.Promise.withResolvers === 'undefined') {
             resolve = res;
             reject = rej;
         });
-        return { promise, resolve, reject };
+        return { promise, resolve: resolve!, reject: reject! };
     };
 }
 
