@@ -26,6 +26,7 @@ async function getPdfs() {
                 forms: {
                     select: {
                         id: true,
+                        name: true,
                         views: true,
                         isPublished: true,
                         shareableLink: true,
