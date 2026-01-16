@@ -21,16 +21,25 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Form not found' }, { status: 404 });
         }
 
-        // 2. Save Submission
-        await prisma.submission.create({
-            data: {
-                formId,
-                data: data,
+        // 2. Signature Privacy: Strip signatures from data before saving to DB
+        const rawMappings = form.fieldMappings as any[];
+        const sanitizedData = { ...data };
+
+        rawMappings.forEach(field => {
+            if (field.type === 'signature' && sanitizedData[field.id]) {
+                sanitizedData[field.id] = '[SIGNATURE_REMOVED]';
             }
         });
 
-        // 3. Prepare data for PDF generation
-        const rawMappings = form.fieldMappings as any[];
+        // 3. Save Sanitized Submission
+        await prisma.submission.create({
+            data: {
+                formId,
+                data: sanitizedData,
+            }
+        });
+
+        // 4. Prepare ORIGINAL data (with signatures) for PDF generation
         const fields = rawMappings.map(field => ({
             id: field.id,
             page: field.page,
