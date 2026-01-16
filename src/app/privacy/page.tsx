@@ -17,7 +17,7 @@ export default async function PrivacyPage() {
                     </p>
 
                     <p>
-                        eformly ("us", "we", or "our") operates the eformly website (the "Service"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.
+                        eformly (&quot;us&quot;, &quot;we&quot;, or &quot;our&quot;) operates the eformly website (the &quot;Service&quot;). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.
                     </p>
 
                     <h2>1. Information Collection</h2>
@@ -26,7 +26,7 @@ export default async function PrivacyPage() {
                     </p>
                     <h3>Personal Data</h3>
                     <p>
-                        While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). This may include, but is not limited to:
+                        While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you (&quot;Personal Data&quot;). This may include, but is not limited to:
                     </p>
                     <ul>
                         <li>Email address</li>
@@ -36,7 +36,7 @@ export default async function PrivacyPage() {
 
                     <h3>Document Data</h3>
                     <p>
-                        We process the PDF documents you upload and the data submitted via your forms ("Document Data"). We store this data to facilitate the service. We do not inspect the content of your PDFs unless required by law or for support purposes at your request.
+                        We process the PDF documents you upload and the data submitted via your forms (&quot;Document Data&quot;). We store this data to facilitate the service. We do not inspect the content of your PDFs unless required by law or for support purposes at your request.
                     </p>
 
                     <h3>Signature Data</h3>
@@ -65,7 +65,7 @@ export default async function PrivacyPage() {
 
                     <h2>4. Service Providers</h2>
                     <p>
-                        We may employ third party companies and individuals to facilitate our Service ("Service Providers"), to provide the Service on our behalf, to perform Service-related services or to assist us in analyzing how our Service is used. These third parties have access to your Personal Data only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.
+                        We may employ third party companies and individuals to facilitate our Service (&quot;Service Providers&quot;), to provide the Service on our behalf, to perform Service-related services or to assist us in analyzing how our Service is used. These third parties have access to your Personal Data only to perform these tasks on our behalf and are obligated not to disclose or use it for any other purpose.
                     </p>
 
                     <h2>5. Changes to This Privacy Policy</h2>

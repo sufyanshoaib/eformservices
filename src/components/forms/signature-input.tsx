@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { Eraser, X, Check } from 'lucide-react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface SignatureInputProps {
@@ -71,7 +72,7 @@ export default function SignatureInput({ value, onChange, label, required, useMo
                     title="Click to sign"
                 >
                     {value ? (
-                        <img src={value} alt="Signature" className="max-h-full max-w-full object-contain" />
+                        <Image src={value} alt="Signature" fill className="object-contain" unoptimized />
                     ) : (
                         <span className="text-[10px] text-slate-400 font-medium bg-white/50 px-1 rounded">Sign</span>
                     )}

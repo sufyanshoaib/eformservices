@@ -17,7 +17,7 @@ export default async function TermsPage() {
                     </p>
 
                     <p>
-                        Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the eformly website (the "Service") operated by eformly ("us", "we", or "our").
+                        Please read these Terms of Service (&quot;Terms&quot;, &quot;Terms of Service&quot;) carefully before using the eformly website (the &quot;Service&quot;) operated by eformly (&quot;us&quot;, &quot;we&quot;, or &quot;our&quot;).
                     </p>
 
                     <h2>1. Acceptance of Terms</h2>
@@ -27,7 +27,7 @@ export default async function TermsPage() {
 
                     <h2>2. Description of Service</h2>
                     <p>
-                        eformly provides tools to convert PDF documents into fillable web forms. You understand and agree that the Service is provided "AS-IS" and that eformly assumes no responsibility for the timeliness, deletion, mis-delivery or failure to store any user communications or personalization settings.
+                        eformly provides tools to convert PDF documents into fillable web forms. You understand and agree that the Service is provided &quot;AS-IS&quot; and that eformly assumes no responsibility for the timeliness, deletion, mis-delivery or failure to store any user communications or personalization settings.
                     </p>
 
                     <h2>3. User Accounts</h2>
@@ -37,12 +37,12 @@ export default async function TermsPage() {
 
                     <h2>4. Content Liability</h2>
                     <p>
-                        Our Service allows you to post, link, store, share and otherwise make available certain information, text, graphics, videos, or other material ("Content"). You are responsible for the Content that you post to the Service, including its legality, reliability, and appropriateness.
+                        Our Service allows you to post, link, store, share and otherwise make available certain information, text, graphics, videos, or other material (&quot;Content&quot;). You are responsible for the Content that you post to the Service, including its legality, reliability, and appropriateness.
                     </p>
 
                     <h2>5. NO WARRANTY</h2>
                     <p className="uppercase font-bold">
-                        THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS. EFORMLY EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+                        THE SERVICE IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS. EFORMLY EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
                     </p>
                     <p className="uppercase font-bold">
                         EFORMLY MAKES NO WARRANTY THAT (I) THE SERVICE WILL MEET YOUR REQUIREMENTS, (II) THE SERVICE WILL BE UNINTERRUPTED, TIMELY, SECURE, OR ERROR-FREE, (III) THE RESULTS THAT MAY BE OBTAINED FROM THE USE OF THE SERVICE WILL BE ACCURATE OR RELIABLE, OR (IV) THE QUALITY OF ANY PRODUCTS, SERVICES, INFORMATION, OR OTHER MATERIAL PURCHASED OR OBTAINED BY YOU THROUGH THE SERVICE WILL MEET YOUR EXPECTATIONS.
