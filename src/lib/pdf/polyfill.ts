@@ -55,10 +55,5 @@ if (typeof root.ImageData === 'undefined') {
     };
 }
 
-// 5. Polyfill basic browser-like globals if missing
-if (typeof root.window === 'undefined') {
-    root.window = root;
-}
-if (typeof root.navigator === 'undefined') {
-    root.navigator = { userAgent: 'Node.js' };
-}
+// REMOVED dangerous root.window = root polyfill as it confuses server-side libraries (like Sentry/Auth)
+// into thinking they are in a browser environment.
