@@ -69,7 +69,11 @@ export async function POST(
         }
 
         // 3. Check usage limits (free tier: 1 PDF, subscribed: unlimited)
-        if (!user.isSubscribed && user.aiMappingUsage >= 1) {
+        const whitelistedEmails = process.env.AI_WHITELIST_EMAILS?.split(',').map(e => e.trim()) || [];
+        const isWhitelisted = session.user.email && whitelistedEmails.includes(session.user.email);
+        const hasAccess = user.isSubscribed || isWhitelisted;
+
+        if (!hasAccess && user.aiMappingUsage >= 1) {
             return NextResponse.json(
                 {
                     error: 'Free trial limit reached.',
@@ -262,19 +266,23 @@ export async function GET(
             );
         }
 
-        const canUse = user.isSubscribed || user.aiMappingUsage < 1;
+        const whitelistedEmails = process.env.AI_WHITELIST_EMAILS?.split(',').map(e => e.trim()) || [];
+        const isWhitelisted = session.user.email && whitelistedEmails.includes(session.user.email);
+        const hasAccess = user.isSubscribed || isWhitelisted;
+
+        const canUse = hasAccess || user.aiMappingUsage < 1;
         const rateLimit = checkRateLimit(user.id);
 
         return NextResponse.json({
             eligible: canUse && rateLimit.allowed,
             usage: {
                 current: user.aiMappingUsage,
-                limit: user.isSubscribed ? 'unlimited' : 1,
+                limit: hasAccess ? 'unlimited' : 1,
             },
             rateLimit: {
                 remaining: rateLimit.remaining,
             },
-            upgradeRequired: !user.isSubscribed && user.aiMappingUsage >= 1,
+            upgradeRequired: !hasAccess && user.aiMappingUsage >= 1,
         });
     } catch (error) {
         console.error('GET /api/pdfs/[id]/analyze error:', error);

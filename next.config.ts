@@ -3,7 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
     /* config options here */
-    serverExternalPackages: ['pdfjs-dist', 'canvas'],
+    serverExternalPackages: ['pdfjs-dist', '@napi-rs/canvas'],
     experimental: {
         serverActions: {
             bodySizeLimit: '10mb',

@@ -18,11 +18,28 @@ export interface PDFMetadata {
     }>;
 }
 
-// Dynamic import helper to ensure polyfills apply before PDF.js loads
+let pdfjsInstance: any = null;
+
 async function getPdfJs() {
-    // @ts-ignore
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    return pdfjsLib;
+    if (pdfjsInstance) return pdfjsInstance;
+
+    try {
+        // @ts-ignore
+        const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+
+        // In Node.js environment, we must set the worker source explicitly
+        if (typeof window === 'undefined') {
+            // @ts-ignore
+            const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
+            pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+        }
+
+        pdfjsInstance = pdfjs;
+        return pdfjs;
+    } catch (error) {
+        console.error('Failed to initialize PDF.js:', error);
+        throw error;
+    }
 }
 
 /**
@@ -38,6 +55,7 @@ export async function extractPdfMetadata(pdfBytes: Uint8Array | ArrayBuffer): Pr
             isEvalSupported: false,
             useSystemFonts: true,
             disableFontFace: true,
+            disableWorker: true, // Use fake worker for serverless stability
         });
 
         const pdfDoc = await loadingTask.promise;
@@ -91,6 +109,7 @@ export async function extractTextBlocks(source: string | Uint8Array | ArrayBuffe
             isEvalSupported: false,
             useSystemFonts: true,
             disableFontFace: true,
+            disableWorker: true, // Use fake worker for serverless stability
         });
 
         const pdfDoc = await loadingTask.promise;

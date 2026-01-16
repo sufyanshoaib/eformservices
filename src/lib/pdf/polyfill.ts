@@ -41,5 +41,24 @@ if (typeof root.Path2D === 'undefined') {
     root.Path2D = class Path2D { };
 }
 
-// REMOVED: window, document, navigator, CanvasRenderingContext2D, Image
-// These were confusing pdfjs-dist into thinking it was in a browser environment.
+// 4. Polyfill ImageData
+if (typeof root.ImageData === 'undefined') {
+    root.ImageData = class ImageData {
+        data: Uint8ClampedArray;
+        width: number;
+        height: number;
+        constructor(width: number, height: number, data?: Uint8ClampedArray) {
+            this.width = width;
+            this.height = height;
+            this.data = data || new Uint8ClampedArray(width * height * 4);
+        }
+    };
+}
+
+// 5. Polyfill basic browser-like globals if missing
+if (typeof root.window === 'undefined') {
+    root.window = root;
+}
+if (typeof root.navigator === 'undefined') {
+    root.navigator = { userAgent: 'Node.js' };
+}
