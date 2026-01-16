@@ -5,7 +5,7 @@ import { generateFilledPdf } from '@/lib/pdf/generator';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { formId, data } = body;
+        const { formId, data, styling } = body;
 
         if (!formId || !data) {
             return NextResponse.json({ error: 'Missing form data' }, { status: 400 });
@@ -39,7 +39,9 @@ export async function POST(request: NextRequest) {
             width: field.width,
             height: field.height,
             type: field.type,
-            value: data[field.id] || ''
+            value: data[field.id] || '',
+            color: styling?.color,
+            fontWeight: styling?.fontWeight
         }));
 
         // 4. Generate PDF

@@ -52,7 +52,17 @@ export function Header({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 </div>
 
                 {/* Desktop navigation */}
-                <div className="hidden lg:flex lg:gap-x-12">
+                <div className="hidden lg:flex lg:gap-x-12 items-center">
+                    <Link
+                        href="/quick-fill"
+                        className="text-sm font-bold leading-6 text-blue-600 hover:text-blue-700 transition-colors flex items-center gap-2 px-3 py-1 bg-blue-50 rounded-full"
+                    >
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+                        </span>
+                        Quick Form Fill & Sign
+                    </Link>
                     {navigation.map((item) => (
                         <Link
                             key={item.name}

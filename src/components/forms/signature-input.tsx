@@ -9,9 +9,10 @@ interface SignatureInputProps {
     label: string;
     required?: boolean;
     useModal?: boolean;
+    penColor?: string;
 }
 
-export default function SignatureInput({ value, onChange, label, required, useModal = false }: SignatureInputProps) {
+export default function SignatureInput({ value, onChange, label, required, useModal = false, penColor = 'black' }: SignatureInputProps) {
     const padRef = useRef<SignatureCanvas>(null);
     const [isEmpty, setIsEmpty] = useState(!value);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,7 +94,7 @@ export default function SignatureInput({ value, onChange, label, required, useMo
                                 <div className="border border-slate-300 bg-white rounded-md shadow-sm overflow-hidden w-full h-64 touch-none">
                                     <SignatureCanvas
                                         ref={padRef}
-                                        penColor="black"
+                                        penColor={penColor}
                                         canvasProps={{
                                             className: 'w-full h-full bg-white cursor-crosshair block',
                                         }}
@@ -140,7 +141,7 @@ export default function SignatureInput({ value, onChange, label, required, useMo
             <div className="border border-slate-300 rounded-md bg-white overflow-hidden relative group">
                 <SignatureCanvas
                     ref={padRef}
-                    penColor="black"
+                    penColor={penColor}
                     canvasProps={{
                         className: 'w-full h-32 bg-slate-50 cursor-crosshair block',
                     }}

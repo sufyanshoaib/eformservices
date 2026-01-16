@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, PenTool } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface HeroProps {
@@ -38,12 +38,12 @@ export function Hero({ isLoggedIn }: HeroProps) {
                                 </Button>
                             </Link>
                         )}
-                        <a
-                            href="#how-it-works"
-                            className="text-sm font-semibold leading-6 text-slate-900 hover:text-blue-600 transition-colors"
-                        >
-                            See how it works <span aria-hidden="true">→</span>
-                        </a>
+                        <Link href="/quick-fill">
+                            <Button size="lg" variant="outline" className="gap-2">
+                                <PenTool className="h-4 w-4" />
+                                Quick Fill & Sign
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>
