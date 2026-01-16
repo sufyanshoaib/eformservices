@@ -27,12 +27,8 @@ async function getPdfJs() {
         // @ts-ignore
         const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
 
-        // In Node.js environment, we must set the worker source explicitly
-        if (typeof window === 'undefined') {
-            // @ts-ignore
-            const pdfjsWorker = await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
-            pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-        }
+        // In Node.js, we don't need to set workerSrc if we use disableWorker: true
+        // and avoid rendering to canvas.
 
         pdfjsInstance = pdfjs;
         return pdfjs;
