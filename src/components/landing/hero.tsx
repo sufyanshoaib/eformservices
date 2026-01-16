@@ -8,7 +8,7 @@ interface HeroProps {
 
 export function Hero({ isLoggedIn }: HeroProps) {
     return (
-        <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white py-20 sm:py-32">
+        <section className="relative overflow-hidden bg-white py-20 sm:py-32">
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="mx-auto max-w-2xl text-center">
                     <div className="mb-8 inline-flex items-center rounded-full bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700">

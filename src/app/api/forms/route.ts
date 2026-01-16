@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { nanoid } from 'nanoid';
 
-// This is a placeholder for authentication
+import { auth } from '@/auth';
+
 async function getUserId(request: NextRequest): Promise<string | null> {
-    return 'dev-user-id';
+    const session = await auth();
+    return session?.user?.id || null;
 }
 
 /**

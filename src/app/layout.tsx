@@ -5,9 +5,14 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "eFormServices - PDF Form Builder",
+    title: "eformly - PDF Form Builder",
     description: "Create fillable web forms from PDF templates",
+    icons: {
+        icon: "/images/brand/icon.svg",
+    },
 };
+
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
     children,
@@ -17,7 +22,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={inter.className} suppressHydrationWarning>{children}</body>
+            <body className={inter.className} suppressHydrationWarning>
+                {children}
+                <Toaster />
+            </body>
         </html>
     );
 }

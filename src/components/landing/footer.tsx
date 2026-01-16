@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 
 const navigation = {
     product: [
@@ -33,10 +33,7 @@ export function Footer() {
             <div className="mx-auto max-w-7xl px-6 pb-8 pt-16 sm:pt-24 lg:px-8 lg:pt-32">
                 <div className="xl:grid xl:grid-cols-3 xl:gap-8">
                     <div className="space-y-8">
-                        <div className="flex items-center gap-2">
-                            <FileText className="h-8 w-8 text-blue-500" />
-                            <span className="text-xl font-bold text-white">eFormServices</span>
-                        </div>
+                        <Logo dark />
                         <p className="text-sm leading-6 text-slate-300">
                             Transform your PDF templates into fillable web forms in minutes.
                         </p>
@@ -118,7 +115,7 @@ export function Footer() {
                 </div>
                 <div className="mt-16 border-t border-slate-700 pt-8 sm:mt-20 lg:mt-24">
                     <p className="text-xs leading-5 text-slate-400">
-                        &copy; {new Date().getFullYear()} eFormServices. All rights reserved.
+                        &copy; {new Date().getFullYear()} eformly. All rights reserved.
                     </p>
                 </div>
             </div>

@@ -8,7 +8,7 @@ import { FAQ } from "@/components/landing/faq";
 import { Footer } from "@/components/landing/footer";
 
 export const metadata: Metadata = {
-    title: "eFormServices - Transform PDFs into Fillable Web Forms",
+    title: "eformly - Transform PDFs into Fillable Web Forms",
     description:
         "Create shareable web forms from PDF templates in minutes. No coding required. Free tier available with 3 PDFs, 10 forms, and 100 submissions per month.",
     keywords: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         "form creator",
     ],
     openGraph: {
-        title: "eFormServices - PDF to Web Form Converter",
+        title: "eformly - PDF to Web Form Converter",
         description: "Transform your PDF templates into interactive web forms",
         type: "website",
         url: "https://eformservices.com",
@@ -34,13 +34,15 @@ export const metadata: Metadata = {
 };
 
 import { auth } from "@/auth";
+import { Header } from "@/components/landing/header";
 
 export default async function Home() {
     const session = await auth();
     const isLoggedIn = !!session?.user;
 
     return (
-        <main className="min-h-screen">
+        <main className="min-h-screen pt-16">
+            <Header isLoggedIn={isLoggedIn} />
             <Hero isLoggedIn={isLoggedIn} />
             <Features />
             <HowItWorks />

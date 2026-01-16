@@ -239,7 +239,7 @@ export default function PublicFormClient({ form }: PublicFormClientProps) {
                     <div className="h-full overflow-y-auto py-12 px-4 sm:px-6 lg:px-8">
                         <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
                             <div className="px-8 py-6 border-b border-gray-100">
-                                <h2 className="text-xl font-bold text-gray-900">Fill Details</h2>
+                                <h2 className="text-xl font-bold text-gray-900">{form.name}</h2>
                                 <p className="text-sm text-gray-500 mt-1">Please fill out the form below.</p>
                             </div>
                             <div className="px-8 py-6 space-y-6">

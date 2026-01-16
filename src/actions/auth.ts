@@ -70,3 +70,8 @@ export async function signInWithGoogle() {
 export async function signInWithFacebook() {
     await signIn("facebook", { redirectTo: "/dashboard/pdfs" });
 }
+
+export async function signOutAction() {
+    const { signOut } = await import("@/auth");
+    await signOut({ redirectTo: "/" });
+}

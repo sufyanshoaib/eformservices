@@ -25,6 +25,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   pdfs          Pdf[]
+  folders       PdfFolder[]
   forms         Form[]
   
   @@map("users")
@@ -72,6 +73,7 @@ model VerificationToken {
 model Pdf {
   id         String   @id @default(cuid())
   userId     String
+  folderId   String?
   name       String
   fileName   String
   fileUrl    String
@@ -79,11 +81,27 @@ model Pdf {
   mimeType   String
   uploadedAt DateTime @default(now())
   
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder     PdfFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   forms      Form[]
   
   @@index([userId])
+  @@index([folderId])
   @@map("pdfs")
+}
+
+model PdfFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pdfs      Pdf[]
+  
+  @@index([userId])
+  @@map("pdf_folders")
 }
 
 model Form {

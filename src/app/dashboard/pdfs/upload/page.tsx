@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { validatePdfFile, formatFileSize } from '@/lib/pdf/validation';
 
-export default function PdfsUploadPage() {
+function UploadForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const folderId = searchParams.get('folderId');
     const [isDragOver, setIsDragOver] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [pdfName, setPdfName] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
@@ -46,16 +49,26 @@ export default function PdfsUploadPage() {
         }
 
         setSelectedFile(file);
+        // Set default name from file name (without extension)
+        setPdfName(file.name.replace(/\.pdf$/i, ''));
     };
 
     const handleUpload = async () => {
         if (!selectedFile) return;
+        if (!pdfName.trim()) {
+            setError('Please enter a name for the PDF');
+            return;
+        }
 
         setIsUploading(true);
         setError(null);
 
         const formData = new FormData();
         formData.append('file', selectedFile);
+        formData.append('name', pdfName.trim());
+        if (folderId) {
+            formData.append('folderId', folderId);
+        }
 
         try {
             const response = await fetch('/api/pdfs', {
@@ -69,7 +82,8 @@ export default function PdfsUploadPage() {
             }
 
             const data = await response.json();
-            router.push('/dashboard/pdfs'); // Redirect to library
+            const redirectUrl = folderId ? `/dashboard/pdfs?folderId=${folderId}` : '/dashboard/pdfs';
+            router.push(redirectUrl); // Redirect to library (specific folder if applicable)
             router.refresh();
         } catch (err: any) {
             setError(err.message || 'Something went wrong during upload');
@@ -79,9 +93,7 @@ export default function PdfsUploadPage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto py-8">
-            <h1 className="text-2xl font-bold mb-6">Upload PDF Template</h1>
-
+        <>
             <div
                 className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer bg-white ${isDragOver ? 'border-primary bg-blue-50' : 'border-gray-300'
                     }`}
@@ -122,9 +134,27 @@ export default function PdfsUploadPage() {
                             </div>
                         </div>
 
+                        <div className="text-left">
+                            <label htmlFor="pdfName" className="block text-sm font-medium text-gray-700 mb-1">
+                                PDF Name
+                            </label>
+                            <input
+                                type="text"
+                                id="pdfName"
+                                value={pdfName}
+                                onChange={(e) => setPdfName(e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                                placeholder="Enter a name for this PDF"
+                                disabled={isUploading}
+                            />
+                        </div>
+
                         <div className="flex space-x-3 justify-center">
                             <button
-                                onClick={() => setSelectedFile(null)}
+                                onClick={() => {
+                                    setSelectedFile(null);
+                                    setPdfName('');
+                                }}
                                 className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-gray-50"
                                 disabled={isUploading}
                             >
@@ -148,6 +178,17 @@ export default function PdfsUploadPage() {
                     {error}
                 </div>
             )}
+        </>
+    );
+}
+
+export default function PdfsUploadPage() {
+    return (
+        <div className="max-w-2xl mx-auto py-8">
+            <h1 className="text-2xl font-bold mb-6">Upload PDF Template</h1>
+            <Suspense fallback={<div>Loading...</div>}>
+                <UploadForm />
+            </Suspense>
         </div>
     );
 }

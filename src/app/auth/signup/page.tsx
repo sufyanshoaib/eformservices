@@ -68,81 +68,90 @@ export default function SignUpPage() {
     };
 
     return (
-        <Card>
-            <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-                <CardDescription>
-                    Enter your email below to create your account
+        <Card className="border-none shadow-xl bg-white/80 backdrop-blur-sm">
+            <CardHeader className="space-y-3 pb-8 text-center pt-8">
+                <CardTitle className="text-3xl font-bold tracking-tight text-slate-900">Create an account</CardTitle>
+                <CardDescription className="text-slate-500 text-base">
+                    Start creating beautiful fillable forms today.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
+            <CardContent className="grid gap-6">
                 <SocialButtons />
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
+                        <span className="w-full border-t border-slate-200" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">
-                            Or continue with
+                        <span className="bg-white px-3 text-slate-400 font-medium">
+                            Or register with email
                         </span>
                     </div>
                 </div>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name" className="text-slate-700 font-semibold">Name</Label>
                         <Input
                             id="name"
                             placeholder="John Doe"
+                            className="h-11 border-slate-200 focus:border-blue-500 focus:ring-blue-500 transition-all"
                             disabled={isPending}
                             {...register("name")}
                         />
                         {errors.name && (
-                            <p className="text-sm text-destructive">{errors.name.message}</p>
+                            <p className="text-xs text-red-500 font-medium">{errors.name.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="text-slate-700 font-semibold">Email</Label>
                         <Input
                             id="email"
                             type="email"
                             placeholder="m@example.com"
+                            className="h-11 border-slate-200 focus:border-blue-500 focus:ring-blue-500 transition-all"
                             disabled={isPending}
                             {...register("email")}
                         />
                         {errors.email && (
-                            <p className="text-sm text-destructive">{errors.email.message}</p>
+                            <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>
                         )}
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-slate-700 font-semibold">Password</Label>
                         <Input
                             id="password"
                             type="password"
+                            className="h-11 border-slate-200 focus:border-blue-500 focus:ring-blue-500 transition-all"
                             disabled={isPending}
                             {...register("password")}
                         />
                         {errors.password && (
-                            <p className="text-sm text-destructive">
+                            <p className="text-xs text-red-500 font-medium">
                                 {errors.password.message}
                             </p>
                         )}
                     </div>
                     {errors.root && (
-                        <p className="text-sm text-destructive">{errors.root.message}</p>
+                        <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                            <p className="text-sm text-red-600 text-center font-medium">{errors.root.message}</p>
+                        </div>
                     )}
-                    <Button type="submit" className="w-full" disabled={isPending}>
-                        {isPending ? "Create account" : "Sign Up"}
+                    <Button
+                        type="submit"
+                        className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
+                        disabled={isPending}
+                    >
+                        {isPending ? "Creating account..." : "Create Account"}
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter className="flex flex-col gap-2 border-t px-6 py-4">
-                <p className="text-center text-sm text-muted-foreground">
+            <CardFooter className="flex flex-col gap-4 border-t border-slate-100 px-8 py-6 bg-slate-50/50 rounded-b-xl">
+                <p className="text-center text-sm text-slate-600">
                     Already have an account?{" "}
                     <Link
                         href="/auth/signin"
-                        className="font-medium text-primary hover:underline"
+                        className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                     >
-                        Sign in
+                        Sign in instead
                     </Link>
                 </p>
             </CardFooter>

@@ -1,4 +1,7 @@
 import type { Metadata } from 'next';
+import { Logo } from '@/components/ui/logo';
+import { signOutAction } from '@/actions/auth';
+import { LogOut } from 'lucide-react';
 
 export const metadata: Metadata = {
     title: 'Dashboard - eFormServices',
@@ -14,7 +17,7 @@ export default function DashboardLayout({
         <div className="flex min-h-screen flex-col md:flex-row">
             {/* Simple Sidebar */}
             <aside className="w-full md:w-64 bg-slate-900 text-white p-6 md:min-h-screen">
-                <h2 className="text-xl font-bold mb-8">eFormServices</h2>
+                <Logo dark className="mb-8" />
                 <nav className="space-y-4">
                     <a href="/dashboard/pdfs" className="block hover:text-blue-300">
                         PDF Library
@@ -23,7 +26,16 @@ export default function DashboardLayout({
                         My Forms
                     </a>
                     <div className="pt-4 border-t border-slate-700">
-                        <span className="block text-sm text-slate-400">User Settings</span>
+                        <span className="block text-sm text-slate-400 mb-4">User Settings</span>
+                        <form action={signOutAction}>
+                            <button
+                                type="submit"
+                                className="flex items-center gap-2 text-sm text-slate-300 hover:text-red-400 transition-colors"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                Sign Out
+                            </button>
+                        </form>
                     </div>
                 </nav>
             </aside>

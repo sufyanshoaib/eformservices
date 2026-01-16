@@ -111,9 +111,8 @@ export async function POST(
             );
         }
 
-        // Check ownership (allow dev-user-id for development)
-        const isDev = process.env.NODE_ENV === 'development' && pdf.userId === 'dev-user-id';
-        if (pdf.userId !== user.id && !isDev) {
+        // Check ownership
+        if (pdf.userId !== user.id) {
             console.log('[AI Analyze] Access denied:', { userId: user.id, pdfUserId: pdf.userId });
             return NextResponse.json(
                 { error: 'Forbidden. You do not own this PDF.' },

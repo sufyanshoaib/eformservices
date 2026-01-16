@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { nanoid } from 'nanoid';
-import { ArrowLeft, Save, Loader2, Share2, Globe, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Share2, Globe, Copy, Check, Pencil } from 'lucide-react';
 import Link from 'next/link';
 
 import FieldSelector from '@/components/forms/field-selector';
@@ -11,6 +11,7 @@ import PdfViewer from '@/components/pdf/pdf-viewer';
 import FormCanvas, { FormField } from '@/components/forms/form-canvas';
 import FieldProperties from '@/components/forms/field-properties';
 import { AIMappingButton, AISuggestionsActions } from '@/components/forms/ai-mapping-button';
+import { RenameFormDialog } from '@/components/dashboard/rename-form-dialog';
 
 interface FormBuilderPageProps {
     params: Promise<{
@@ -158,17 +159,43 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
         setFields([...fields, ...newFields]);
     };
 
-    const handleConfirmAllSuggestions = () => {
+    const handleConfirmAllSuggestions = async () => {
         // Convert AI suggestions to regular fields
-        setFields(fields.map(f =>
+        const updatedFields = fields.map(f =>
             f.isAISuggestion ? { ...f, isAISuggestion: false, confidence: undefined } : f
-        ));
+        );
+        setFields(updatedFields);
+
+        // Auto-save to ensure persistence
+        setSaving(true);
+        try {
+            await fetch(`/api/forms/${params.formId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fieldMappings: updatedFields }),
+            });
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleClearAllSuggestions = () => {
+    const handleClearAllSuggestions = async () => {
         // Remove all AI suggestions
-        setFields(fields.filter(f => !f.isAISuggestion));
+        const updatedFields = fields.filter(f => !f.isAISuggestion);
+        setFields(updatedFields);
         setSelectedFieldId(null);
+
+        // Auto-save
+        setSaving(true);
+        try {
+            await fetch(`/api/forms/${params.formId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fieldMappings: updatedFields }),
+            });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const aiSuggestionCount = fields.filter(f => f.isAISuggestion).length;
@@ -200,7 +227,17 @@ export default function FormBuilderPage(props: FormBuilderPageProps) {
                     </Link>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-sm font-semibold text-slate-900">{form.name}</h1>
+                            <RenameFormDialog
+                                formId={params.formId}
+                                initialName={form.name}
+                                onRename={(newName) => setForm({ ...form, name: newName })}
+                                trigger={
+                                    <h1 className="text-sm font-semibold text-slate-900 cursor-pointer hover:text-primary transition-colors flex items-center gap-2">
+                                        {form.name}
+                                        <Pencil className="w-3 h-3 text-slate-400" />
+                                    </h1>
+                                }
+                            />
                             {isPublished ? (
                                 <span className="px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-medium border border-green-200">
                                     Published

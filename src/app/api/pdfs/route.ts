@@ -3,25 +3,12 @@ import { prisma } from '@/lib/db';
 import { validatePdfBuffer } from '@/lib/pdf/validation';
 import { uploadPdfBufferToBlob } from '@/lib/pdf/upload';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
 
-// This is a placeholder for authentication
-// TODO: Replace with actual NextAuth session check
+// Helper to get user ID
 async function getUserId(request: NextRequest): Promise<string | null> {
-    const userId = 'dev-user-id';
-
-    // Ensure the dev user exists in the database
-    // This is a temporary fix until real auth is working
-    await prisma.user.upsert({
-        where: { id: userId },
-        update: {},
-        create: {
-            id: userId,
-            email: 'dev@example.com',
-            name: 'Dev User',
-        },
-    });
-
-    return userId;
+    const session = await auth();
+    return session?.user?.id || null;
 }
 
 /**
@@ -41,6 +28,8 @@ export async function POST(request: NextRequest) {
         // Parse form data
         const formData = await request.formData();
         const file = formData.get('file') as File;
+        const folderId = formData.get('folderId') as string | null;
+        const customName = formData.get('name') as string | null;
 
         if (!file) {
             return NextResponse.json(
@@ -62,6 +51,21 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Check if folder exists and belongs to user (if folderId provided)
+        if (folderId) {
+            const folder = await prisma.pdfFolder.findUnique({
+                where: { id: folderId },
+                select: { userId: true }
+            });
+
+            if (!folder || folder.userId !== userId) {
+                return NextResponse.json(
+                    { error: 'Invalid folder' },
+                    { status: 400 }
+                );
+            }
+        }
+
         // Upload to Vercel Blob
         const fileUrl = await uploadPdfBufferToBlob(buffer, file.name, userId);
 
@@ -69,7 +73,8 @@ export async function POST(request: NextRequest) {
         const pdf = await prisma.pdf.create({
             data: {
                 userId,
-                name: file.name.replace('.pdf', ''),
+                folderId: folderId || null,
+                name: customName || file.name.replace('.pdf', ''),
                 fileName: file.name,
                 fileUrl,
                 fileSize: buffer.length,
@@ -114,16 +119,26 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Get pagination parameters
+        // Get pagination and filter parameters
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '20');
+        const folderIdParam = searchParams.get('folderId');
         const skip = (page - 1) * limit;
+
+        // Build where clause
+        const where: any = { userId };
+
+        if (folderIdParam === 'root') {
+            where.folderId = null;
+        } else if (folderIdParam) {
+            where.folderId = folderIdParam;
+        }
 
         // Fetch PDFs
         const [pdfs, total] = await Promise.all([
             prisma.pdf.findMany({
-                where: { userId },
+                where,
                 orderBy: { uploadedAt: 'desc' },
                 skip,
                 take: limit,
@@ -133,7 +148,7 @@ export async function GET(request: NextRequest) {
                     },
                 },
             }),
-            prisma.pdf.count({ where: { userId } }),
+            prisma.pdf.count({ where }),
         ]);
 
         return NextResponse.json({

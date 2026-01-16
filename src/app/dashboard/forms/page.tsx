@@ -3,9 +3,11 @@ import { prisma } from '@/lib/db';
 import { formatDistanceToNow } from 'date-fns';
 import { FileText, MoreVertical, Plus, ExternalLink, Pencil, Trash } from 'lucide-react';
 
+import { auth } from '@/auth';
+
 async function getUserId() {
-    // Temporary: Return a mock user ID for development
-    return 'dev-user-id';
+    const session = await auth();
+    return session?.user?.id;
 }
 
 async function getForms() {
