@@ -115,6 +115,24 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
             }
         }
 
+        // Add branding footer to all pages
+        const footerText = 'Filled with eformly (eformly.app)';
+        const footerFontSize = 8;
+        const footerColor = rgb(0.5, 0.5, 0.5);
+
+        for (const page of pages) {
+            const { width } = page.getSize();
+            const textWidth = helveticaFont.widthOfTextAtSize(footerText, footerFontSize);
+
+            page.drawText(footerText, {
+                x: (width - textWidth) / 2,
+                y: 20,
+                size: footerFontSize,
+                font: helveticaFont,
+                color: footerColor,
+            });
+        }
+
         // 6. Serialize the PDFDocument to bytes
         const pdfBytes = await pdfDoc.save();
         return pdfBytes;
