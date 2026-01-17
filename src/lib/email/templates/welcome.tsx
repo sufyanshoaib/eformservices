@@ -8,7 +8,7 @@ export const WelcomeEmail: React.FC<WelcomeEmailProps> = ({ name }) => (
     <div style={{ fontFamily: 'sans-serif', lineHeight: '1.6', color: '#333' }}>
         <h1>Welcome to eformly, {name}!</h1>
         <p>
-            We're thrilled to have you on board. eformly makes it effortless to turn your static
+            We&apos;re thrilled to have you on board. eformly makes it effortless to turn your static
             PDFs into dynamic, fillable online forms.
         </p>
         <p>

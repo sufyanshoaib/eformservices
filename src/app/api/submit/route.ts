@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
                     from: EMAIL_FROM,
                     to: formOwner.email,
                     subject: `New Submission: ${form.name}`,
-                    react: SubmissionReceiptEmail({ formTitle: form.name }),
+                    react: SubmissionReceiptEmail({ formTitle: form.name }) as any,
                     attachments: [
                         {
                             filename: `${form.name.replace(/\s+/g, '_')}_filled.pdf`,

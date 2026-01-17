@@ -123,7 +123,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                             from: EMAIL_FROM,
                             to: user.email,
                             subject: "Welcome to eformly!",
-                            react: WelcomeEmail({ name: user.name }),
+                            react: WelcomeEmail({ name: user.name }) as any,
                         });
                         console.log(`[Email] Welcome email sent to ${user.email}`);
                     } else {
