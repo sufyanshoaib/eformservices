@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import { PostHogProvider } from "@/lib/analytics/posthog-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,11 +12,10 @@ export const metadata: Metadata = {
     icons: {
         icon: "/images/brand/icon.svg",
     },
+    verification: {
+        google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    },
 };
-
-import { Toaster } from "@/components/ui/sonner";
-
-import { PostHogProvider } from "@/lib/analytics/posthog-provider";
 
 export default function RootLayout({
     children,

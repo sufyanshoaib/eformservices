@@ -20,7 +20,21 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     return {
         title: form.name,
-        description: `Fill out ${form.name}`,
+        description: `Fill out ${form.name} securely online with eFormServices.`,
+        openGraph: {
+            title: form.name,
+            description: `Fill out ${form.name} securely online.`,
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: form.name,
+            description: `Fill out ${form.name} securely online.`,
+        },
+        robots: {
+            index: true,
+            follow: true,
+        },
     };
 }
 

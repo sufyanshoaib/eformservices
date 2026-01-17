@@ -42,6 +42,24 @@ export default async function Home() {
 
     return (
         <main className="min-h-screen pt-16">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "SoftwareApplication",
+                        "name": "eFormServices",
+                        "applicationCategory": "BusinessApplication",
+                        "operatingSystem": "Web",
+                        "offers": {
+                            "@type": "Offer",
+                            "price": "0",
+                            "priceCurrency": "USD"
+                        },
+                        "description": "Transform your PDF templates into interactive web forms."
+                    })
+                }}
+            />
             <Header isLoggedIn={isLoggedIn} />
             <Hero isLoggedIn={isLoggedIn} />
             <Features />
