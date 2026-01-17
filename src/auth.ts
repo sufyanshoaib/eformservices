@@ -4,9 +4,12 @@ import Google from "next-auth/providers/google"
 import Facebook from "next-auth/providers/facebook"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/db"
+import { authConfig } from "./auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     adapter: PrismaAdapter(prisma),
+    session: { strategy: "jwt" },
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,
@@ -39,6 +42,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }),
     ],
     callbacks: {
+        ...authConfig.callbacks,
         async signIn({ user, account, profile, email }) {
             // Allow sign in for OAuth providers
             if (account?.provider === "google" || account?.provider === "facebook") {
@@ -134,8 +138,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
             }
         },
-    },
-    pages: {
-        signIn: '/auth/signin',
     },
 })
