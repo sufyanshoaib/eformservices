@@ -111,6 +111,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return token;
         },
     },
+    events: {
+        async createUser({ user }) {
+            if (user.email && user.name) {
+                try {
+                    const { resend, EMAIL_FROM, shouldSendEmail } = await import("@/lib/email/client");
+                    const { WelcomeEmail } = await import("@/lib/email/templates/welcome");
+
+                    if (shouldSendEmail()) {
+                        await resend.emails.send({
+                            from: EMAIL_FROM,
+                            to: user.email,
+                            subject: "Welcome to eformly!",
+                            react: WelcomeEmail({ name: user.name }),
+                        });
+                        console.log(`[Email] Welcome email sent to ${user.email}`);
+                    } else {
+                        console.log(`[Email] Skipped welcome email for ${user.email} (Dev/Test mode)`);
+                    }
+                } catch (error) {
+                    console.error("[Email] Failed to send welcome email:", error);
+                }
+            }
+        },
+    },
     pages: {
         signIn: '/auth/signin',
     },

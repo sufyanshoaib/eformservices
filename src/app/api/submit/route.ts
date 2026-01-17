@@ -69,7 +69,41 @@ export async function POST(request: NextRequest) {
             fields
         });
 
-        // 5. Return PDF as stream
+        // 5. Send Submission Receipt (Async, don't block response too long, or use fire-and-forget)
+        try {
+            const { resend, EMAIL_FROM, shouldSendEmail } = await import("@/lib/email/client");
+            const { SubmissionReceiptEmail } = await import("@/lib/email/templates/submission-receipt");
+
+            // We need to fetch the owner's email.
+            const formOwner = await prisma.user.findFirst({
+                where: { id: form.userId },
+                select: { email: true }
+            });
+
+            if (formOwner?.email && shouldSendEmail()) {
+                await resend.emails.send({
+                    from: EMAIL_FROM,
+                    to: formOwner.email,
+                    subject: `New Submission: ${form.name}`,
+                    react: SubmissionReceiptEmail({ formTitle: form.name }),
+                    attachments: [
+                        {
+                            filename: `${form.name.replace(/\s+/g, '_')}_filled.pdf`,
+                            content: Buffer.from(pdfBytes)
+                        }
+                    ]
+                });
+                console.log(`[Email] Submission receipt sent to ${formOwner.email}`);
+            } else {
+                console.log(`[Email] Skipped receipt for ${formOwner?.email || 'unknown'} (Dev/Test mode)`);
+            }
+
+        } catch (emailError) {
+            console.error("[Email] Failed to send submission receipt:", emailError);
+            // Don't fail the request if email fails
+        }
+
+        // 6. Return PDF as stream
         const headers = new Headers();
         headers.set('Content-Type', 'application/pdf');
         headers.set('Content-Disposition', `attachment; filename="${form.name.replace(/\s+/g, '_')}_filled.pdf"`);
