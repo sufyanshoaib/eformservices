@@ -39,13 +39,6 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
         const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
         const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // ZapfDingbats can be tricky in some environments, let's ensure it loads
-        let zapfDingbatsFont: any;
-        try {
-            zapfDingbatsFont = await pdfDoc.embedFont(StandardFonts.ZapfDingbats);
-        } catch (fontError) {
-            console.error('[PDF Generator] Failed to embed ZapfDingbats:', fontError);
-        }
 
         const pages = pdfDoc.getPages();
 
@@ -81,25 +74,34 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
                     const isSelected = val === 'true' || val === 'checked' || val === 'yes' || val === 'on' || val === '1';
 
                     if (isSelected) {
-                        if (zapfDingbatsFont) {
-                            const checkmarkSize = Math.min(w, h) * 0.8;
-                            page.drawText('4', {
-                                x: x + (w - checkmarkSize) / 2,
-                                y: y + (h - checkmarkSize) / 2,
-                                size: checkmarkSize,
-                                font: zapfDingbatsFont,
-                                color: fieldColor,
-                            });
-                        } else {
-                            // Fallback to a simple X if ZapfDingbats failed
-                            page.drawText('X', {
-                                x: x + w / 4,
-                                y: textY,
-                                size: Math.min(w, h) * 0.6,
-                                font: helveticaBoldFont,
-                                color: fieldColor,
-                            });
-                        }
+                        // Draw a vector checkmark (tick) to avoid font encoding issues
+                        const strokeWidth = isBold ? 3 : 2;
+
+                        // Define checkmark points relative to the bounding box
+                        // Structure: Start(left-mid) -> Dip(center-bottom) -> End(right-top) 
+                        const x1 = x + w * 0.25;
+                        const y1 = y + h * 0.45;
+
+                        const x2 = x + w * 0.45;
+                        const y2 = y + h * 0.25; // The bottom point
+
+                        const x3 = x + w * 0.80;
+                        const y3 = y + h * 0.75;
+
+                        // Draw the two segments of the checkmark
+                        page.drawLine({
+                            start: { x: x1, y: y1 },
+                            end: { x: x2, y: y2 },
+                            thickness: strokeWidth,
+                            color: fieldColor,
+                        });
+
+                        page.drawLine({
+                            start: { x: x2, y: y2 },
+                            end: { x: x3, y: y3 },
+                            thickness: strokeWidth,
+                            color: fieldColor,
+                        });
                     }
                 } else if (field.type === 'signature') {
                     if (field.value && field.value.startsWith('data:image')) {
