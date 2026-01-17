@@ -10,8 +10,8 @@ const navigation = {
     ],
     support: [
         { name: "FAQ", href: "#faq" },
-        { name: "Documentation", href: "#" },
-        { name: "Contact", href: "#" },
+        { name: "About Us", href: "/about" },
+        { name: "Contact", href: "/contact" },
     ],
     legal: [
         { name: "Privacy Policy", href: "/privacy" },
