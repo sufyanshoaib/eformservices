@@ -40,18 +40,28 @@ export async function POST(request: NextRequest) {
         });
 
         // 4. Prepare ORIGINAL data (with signatures) for PDF generation
-        const fields = rawMappings.map(field => ({
-            id: field.id,
-            page: field.page,
-            x: field.x,
-            y: field.y,
-            width: field.width,
-            height: field.height,
-            type: field.type,
-            value: data[field.id] || '',
-            color: styling?.color,
-            fontWeight: styling?.fontWeight
-        }));
+        const fields = rawMappings.map(field => {
+            let val = data[field.id] || '';
+
+            // Handle radio buttons which are grouped by groupName in the submission data
+            if (field.type === 'radio' && field.groupName) {
+                const groupValue = data[field.groupName];
+                val = groupValue === field.value ? 'true' : '';
+            }
+
+            return {
+                id: field.id,
+                page: field.page,
+                x: field.x,
+                y: field.y,
+                width: field.width,
+                height: field.height,
+                type: field.type,
+                value: val,
+                color: styling?.color,
+                fontWeight: styling?.fontWeight
+            };
+        });
 
         // 4. Generate PDF
         const pdfBytes = await generateFilledPdf({

@@ -21,9 +21,12 @@ const colorMap: Record<string, any> = {
     blue: rgb(0.145, 0.388, 0.922),
     red: rgb(0.863, 0.149, 0.149),
     green: rgb(0.02, 0.588, 0.412),
+    emerald: rgb(0.02, 0.588, 0.412),
 };
 
 export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): Promise<Uint8Array> {
+    console.log(`[PDF Generator] Starting generation for ${pdfUrl} with ${fields.length} fields`);
+
     try {
         const existingPdfBytes = await fetch(pdfUrl).then(res => {
             if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.statusText}`);
@@ -35,7 +38,14 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
         // Embed fonts
         const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
         const helveticaBoldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const zapfDingbatsFont = await pdfDoc.embedFont(StandardFonts.ZapfDingbats);
+
+        // ZapfDingbats can be tricky in some environments, let's ensure it loads
+        let zapfDingbatsFont: any;
+        try {
+            zapfDingbatsFont = await pdfDoc.embedFont(StandardFonts.ZapfDingbats);
+        } catch (fontError) {
+            console.error('[PDF Generator] Failed to embed ZapfDingbats:', fontError);
+        }
 
         const pages = pdfDoc.getPages();
 
@@ -45,7 +55,10 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
             const pageNum = Number(field.page);
             const pageIndex = pageNum - 1;
 
-            if (pageIndex < 0 || pageIndex >= pages.length) continue;
+            if (pageIndex < 0 || pageIndex >= pages.length) {
+                console.warn(`[PDF Generator] Page index ${pageIndex} out of bounds for PDF with ${pages.length} pages`);
+                continue;
+            }
 
             const page = pages[pageIndex];
             const { height } = page.getSize();
@@ -62,20 +75,31 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
             const isBold = field.fontWeight === 'bold';
 
             try {
-                if (field.type === 'checkbox' || field.type === 'radio') {
-                    if (field.value === 'true' || field.value === 'checked' || field.value === 'yes' || field.value === 'on') {
-                        const checkmarkSize = Math.min(w, h) * 0.8;
+                if (field.type === 'checkbox' || field.type === 'radio' || field.type === 'checkmark') {
+                    // Normalize boolean-like values
+                    const val = String(field.value).toLowerCase();
+                    const isSelected = val === 'true' || val === 'checked' || val === 'yes' || val === 'on' || val === '1';
 
-                        page.drawText('4', {
-                            x: x + (w - checkmarkSize) / 2,
-                            y: y + (h - checkmarkSize) / 2,
-                            size: checkmarkSize,
-                            font: zapfDingbatsFont,
-                            color: fieldColor,
-                        });
-
-                        // If bold, draw it again slightly offset or just accept the Dingbat weight
-                        // Dingbats are already heavy. Bold Dingbats aren't standard in pdf-lib easily.
+                    if (isSelected) {
+                        if (zapfDingbatsFont) {
+                            const checkmarkSize = Math.min(w, h) * 0.8;
+                            page.drawText('4', {
+                                x: x + (w - checkmarkSize) / 2,
+                                y: y + (h - checkmarkSize) / 2,
+                                size: checkmarkSize,
+                                font: zapfDingbatsFont,
+                                color: fieldColor,
+                            });
+                        } else {
+                            // Fallback to a simple X if ZapfDingbats failed
+                            page.drawText('X', {
+                                x: x + w / 4,
+                                y: textY,
+                                size: Math.min(w, h) * 0.6,
+                                font: helveticaBoldFont,
+                                color: fieldColor,
+                            });
+                        }
                     }
                 } else if (field.type === 'signature') {
                     if (field.value && field.value.startsWith('data:image')) {
@@ -96,12 +120,12 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
                                 height: imgDims.height,
                             });
                         } catch (imgError) {
-                            console.error('  Failed to embed signature image:', imgError);
+                            console.error('[PDF Generator] Failed to embed signature image:', imgError);
                             page.drawText('(Signature Error)', { x, y: textY, size: 8, font: helveticaFont, color: rgb(1, 0, 0) });
                         }
                     }
                 } else {
-                    page.drawText(field.value, {
+                    page.drawText(String(field.value), {
                         x: x + 2,
                         y: textY,
                         size: 9,
@@ -111,7 +135,7 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
                     });
                 }
             } catch (textError) {
-                console.error('  Error drawing content:', textError);
+                console.error(`[PDF Generator] Error drawing field ${field.id}:`, textError);
             }
         }
 
@@ -133,11 +157,11 @@ export async function generateFilledPdf({ pdfUrl, fields }: GeneratePdfParams): 
             });
         }
 
-        // 6. Serialize the PDFDocument to bytes
         const pdfBytes = await pdfDoc.save();
+        console.log(`[PDF Generator] Successfully generated PDF (${pdfBytes.length} bytes)`);
         return pdfBytes;
     } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.error('[PDF Generator] Error generating PDF:', error);
         throw new Error('Failed to generate PDF');
     }
 }
