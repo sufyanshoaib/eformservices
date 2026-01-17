@@ -38,14 +38,15 @@ export default function QuickFillClient() {
     });
 
     const handleAddElement = (page: number, x: number, y: number) => {
+        y = y - 12;
         const newElement: AdhocElement = {
             id: nanoid(),
             type: activeTool,
             page,
             x,
             y,
-            width: activeTool === 'signature' ? 150 : (activeTool === 'checkmark' ? 24 : 200),
-            height: activeTool === 'signature' ? 60 : (activeTool === 'checkmark' ? 24 : 30),
+            width: activeTool === 'signature' ? 150 : (activeTool === 'checkmark' ? 24 : 150),
+            height: activeTool === 'signature' ? 60 : (activeTool === 'checkmark' ? 24 : 24),
             value: activeTool === 'checkmark' ? 'true' : '',
             color: activeColor,
             fontWeight: isBold ? 'bold' : 'normal'
