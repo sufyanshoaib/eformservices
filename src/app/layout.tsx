@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/sonner";
 
+import { PostHogProvider } from "@/lib/analytics/posthog-provider";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -23,8 +25,10 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={inter.className} suppressHydrationWarning>
-                {children}
-                <Toaster />
+                <PostHogProvider>
+                    {children}
+                    <Toaster />
+                </PostHogProvider>
             </body>
         </html>
     );

@@ -1,12 +1,12 @@
 # Tasks: Event Tracking (PostHog)
 
-- [ ] **1. Setup & Integration**
-    - [ ] Install `posthog-js`.
-    - [ ] Create `src/lib/analytics/posthog-provider.tsx` (Client Component).
-    - [ ] Add `PostHogProvider` to `src/app/layout.tsx`.
-- [ ] **2. Configuration**
-    - [ ] Set up environment variables (`NEXT_PUBLIC_POSTHOG_KEY`, `NEXT_PUBLIC_POSTHOG_HOST`).
-    - [ ] Configure `maskInputOptions` to protect PII in session replays.
+- [x] **1. Setup & Integration**
+    - [x] Install `posthog-js`.
+    - [x] Create `src/lib/analytics/posthog-provider.tsx` (Client Component).
+    - [x] Add `PostHogProvider` to `src/app/layout.tsx`.
+- [x] **2. Configuration**
+    - [x] Set up environment variables (User to provide).
+    - [x] Configure `maskInputOptions` to protect PII in session replays.
 - [ ] **3. Verification**
     - [ ] Verify pageview events are firing on route changes.
     - [ ] Verify button clicks are autocaptured.
