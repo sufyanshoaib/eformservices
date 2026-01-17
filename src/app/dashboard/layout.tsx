@@ -25,6 +25,9 @@ export default function DashboardLayout({
                     <a href="/dashboard/forms" className="block hover:text-blue-300">
                         My Forms
                     </a>
+                    <a href="/quick-fill" className="block hover:text-blue-300">
+                        Quick Fill & Sign
+                    </a>
                     <div className="pt-4 border-t border-slate-700">
                         <span className="block text-sm text-slate-400 mb-4">User Settings</span>
                         <form action={signOutAction}>
